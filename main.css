@@ -1,0 +1,107 @@
+body {
+  margin: 0;
+  background-color: #0F0F0F;
+}
+
+.top {
+  display: flex;
+  justify-content: center; /* center horizontally */
+  align-items: center;     /* center vertically */
+  padding-top: 20px;
+}
+
+.timer-text {
+  color: white;
+  font-weight: 500;
+  font-size: 23px;
+  font-family: 'Roboto', sans-serif;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  padding-left: 5px;
+}
+
+.login-button {
+  position: absolute;
+  right: 33px;       /* 10px from right edge */
+  top: 20px;         /* same vertical position as the container padding */
+  padding: 0;
+  background: transparent;
+  color: white;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  font-size: 23px;
+  border: none;
+  cursor: pointer;
+  transition: color 0.25s ease;
+}
+.login-button:hover {
+  color: #AEACAC;          
+}
+
+.text-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* center both vertically & horizontally */
+    width: 1000px;
+    font-size: 40px;
+    text-align: center;
+    overflow: hidden; /* clip extra text */
+}
+
+.scroll-area {
+    display: inline-block;
+    white-space: nowrap;  /* prevent wrapping */
+    position: relative;
+    height: 40px;         /* match input height / font size */
+    width: max-content;   /* expand width to fit all children */
+    min-width: 100%;      /* at least fill container */
+}
+
+.text-input,
+.highlighted-text {
+    font-size: 40px;
+    font-family: 'Roboto', sans-serif;
+    background: transparent;
+    border: none;
+    outline: none;
+    text-align: left;   /* left-align inside scroll */
+    white-space: nowrap; /* stop wrapping */
+    width: max-content;  /* match scroll area width */
+}
+
+.text-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    font-weight: 500;
+    color: transparent;        /* hide actual text */
+    caret-color: #696969;      /* show caret */
+}
+
+.highlighted-text {
+    margin-left: 2px;
+    overflow: hidden;      /* hide overflow so it looks like input */
+    font-weight: 500;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 50px;
+    pointer-events: none; /* allow clicking the input */
+}
+
+/* Gradient for untyped text */
+.highlighted-text .gradient {
+    background: linear-gradient(to right, #575757, #1D1D1D);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.highlighted-text .correct {
+    color: white;
+}
+
+.highlighted-text .incorrect {
+    color: red;
+}
+
