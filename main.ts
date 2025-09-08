@@ -1,5 +1,6 @@
 const input = document.getElementById("textInput") as HTMLInputElement;
-const overlayText = document.getElementById("highlightedText") as HTMLDivElement;
+const scrollArea = document.getElementById("scrollArea") as HTMLDivElement;
+const overlayText = document.getElementById("overlayText") as HTMLParagraphElement;
 const timer = document.getElementById("timerText") as HTMLParagraphElement;
 const loginButton = document.getElementById("loginButton") as HTMLButtonElement;
 
@@ -13,14 +14,16 @@ let isTimerRunning: boolean = false;
 let isCurrentWordCorrect: boolean = true;
 let correctWords: number = 0;
 
-function init(): void {
-    input.value = "Rain fell gently over the quiet town. Birds sang softly as children played. An old man smiled, remembering youth. Time passed slowly yet beautifully. Life moved like the river, sometimes calm, sometimes wild, but always forward with hope.";
+async function init(): Promise<void> {
 
-    texts.push(`<span class="gradient">${input.value}</span>`);
+    const text = await getRandomText();
+    input.value = text;
+
+    texts.push(`<span class="default">${text}</span>`);
     overlayText.innerHTML = texts.join("");
 
-    // Move caret to the beginning
     input.setSelectionRange(0, 0);
+
 }
 function setupListeners(): void {
     // Stop caret from moving on click
@@ -31,7 +34,7 @@ function setupListeners(): void {
     });
 
     // Stop caret from moving on selection
-    input.addEventListener("focus", lockCaret);
+    input.addEventListener("focus",lockCaret);
 
     // Handle keys
     input.addEventListener("keydown", (e: KeyboardEvent): void => {
@@ -82,9 +85,29 @@ function setupListeners(): void {
             return;
         }
     });
+
+    // remain scrolled position after being focused away
+    input.addEventListener('blur', () => {
+        // Capture scroll before blur
+        const scrollPos = input.scrollLeft;
+
+        // Use rAF to re-apply scroll without visual jerk
+        requestAnimationFrame(() => {
+            input.scrollLeft = scrollPos;
+        });
+    });
+
 }
 function lockCaret(): void {
     input.setSelectionRange(currentCaretPosition,currentCaretPosition);
+}
+async function getRandomText(): Promise<string> {
+    const randomNumber: number = Math.floor(Math.random() * 10) + 1;
+
+    // Read file
+    const response = await fetch(`texts/text${randomNumber}.txt`);
+
+    return await response.text();
 }
 
 function highlightCorrectChar(charPosition: number): void {
@@ -96,7 +119,7 @@ function highlightCorrectChar(charPosition: number): void {
     texts.splice(index, 0, `<span class="correct">${correctChar}</span>`);
 
     // change rest text
-    texts[texts.length - 1] = `<span class="gradient">${rest}</span>`;
+    texts[texts.length - 1] = `<span class="default">${rest}</span>`;
 
     // add all texts
     overlayText.innerHTML = texts.join("");
@@ -111,7 +134,7 @@ function highlightIncorrectChar(charPosition: number): void {
     texts.splice(index, 0, `<span class="incorrect">${incorrectChar}</span>`);
 
     // change rest text
-    texts[texts.length - 1] = `<span class="gradient">${rest}</span>`;
+    texts[texts.length - 1] = `<span class="default">${rest}</span>`;
 
     // add all texts
     overlayText.innerHTML = texts.join("");
@@ -122,7 +145,7 @@ function addSpace(): void {
     const index = texts.length - 1;
     texts.splice(index, 0, " ");
 
-    overlayText.innerHTML = texts.join("");
+    //overlayText.innerHTML = texts.join("");
 }
 
 function startTimer(): void {
@@ -139,7 +162,7 @@ function startTimer(): void {
         if (totalSeconds === 0) {
             clearInterval(interval);      // stop the timer
             isTimerRunning = false;
-            timer.textContent = "Timer is over";
+            timer.textContent = `Correct words: ${correctWords}`;
         }
 
         totalSeconds--;
@@ -151,27 +174,36 @@ function recountCorrectWords(): void {
     }
 }
 function updateScroll(): void {
-    const container = document.querySelector(".text-container") as HTMLDivElement;
-    const scrollArea = document.querySelector(".scroll-area") as HTMLDivElement;
+    const caretPos = input.selectionStart ?? 0;
 
-    const caretX = input.selectionStart || 0;
+    // measure text width up to caret
+    const ctx = document.createElement("canvas").getContext("2d");
+    ctx!.font = window.getComputedStyle(input).font;
+    const textBeforeCaret = input.value.substring(0, caretPos);
+    const caretPixelPos = ctx!.measureText(textBeforeCaret).width;
 
-    // Estimate character width (you can refine this with actual measureText)
-    const charWidth = 24; // ~40px font size → ~24px per char
-    const caretPixelPos = caretX * charWidth;
+    const containerMid = input.clientWidth / 2;
+    const maxScroll = input.scrollWidth - input.clientWidth;
 
-    const containerMid = container.clientWidth / 2;
-
+    let targetScroll = 0;
     if (caretPixelPos > containerMid) {
-        const shift = caretPixelPos - containerMid;
-        scrollArea.style.transform = `translateX(-${shift}px)`;
-    } else {
-        scrollArea.style.transform = `translateX(0)`;
+        targetScroll = caretPixelPos - containerMid;
     }
+
+    // clamp
+    if (targetScroll > maxScroll) targetScroll = maxScroll;
+
+    input.scrollLeft = targetScroll;
+
+
+    // Ensure smooth transform animations
+    overlayText.style.transition = "transform 0.15s ease-out";
+    // 🔑 Move overlay text left to match scroll
+    overlayText.style.transform = `translateX(-${targetScroll}px)`;
 }
+
 
 init();
 setupListeners();
-
 
 
