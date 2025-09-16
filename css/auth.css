@@ -1,0 +1,416 @@
+body {
+    margin: 0;
+    background-color: #0F0F0F;
+}
+
+h1 {
+    font-size: 42px;
+    color: #ffffff;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 700;
+
+    margin: 140px auto 0 auto;
+    width: 400px;
+    text-align: left;
+}
+h2 {
+    font-size: 18px;
+    color: #ffffff;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
+
+    margin: 10px auto 0 auto;
+    width: 400px;
+    text-align: left;
+}
+
+.auth-email-group {
+    margin: 90px auto 0 auto;
+    width: 400px;
+}
+.auth-email-input-container {
+    position: relative;
+    width: 100%;
+}
+.auth-email-input {
+    margin-top: 10px;
+    height: 54px;
+    width: 100%;
+
+    background: #1A1A1A;
+    border: none;
+    border-radius: 14px;
+
+    padding-left: 52px;
+    padding-right: 20px;
+    padding-top: 2px;
+    font-size: 16px;
+    color: #ffffff;
+
+    box-sizing: border-box; /* keeps input within parent */
+}
+.auth-email-input:-webkit-autofill {
+    background-color: #111 !important;
+    -webkit-text-fill-color: #fff !important;
+    font-size: 16px !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+.auth-email-input:-webkit-autofill:focus {
+    background-color: #111 !important;
+    -webkit-text-fill-color: #fff !important;
+    font-size: 16px !important;
+}
+.auth-email-input::placeholder {
+    color: #575757;
+}
+.auth-email-input-icon {
+    width: 20px;
+    height: 20px;
+
+    position: absolute;
+    left: 18px;
+    top: 57%;              /* halfway down the container */
+    transform: translateY(-46%); /* shift up by half of its height */
+}
+
+.auth-password-group {
+    margin: 35px auto 0 auto;
+    width: 400px;
+}
+.auth-password-input-container {
+    position: relative;
+    width: 100%;
+}
+.auth-password-input {
+    margin-top: 10px;
+    height: 54px;
+    width: 100%;
+
+    background: #1A1A1A;
+    border: none;
+    border-radius: 14px;
+
+    padding-left: 52px;
+    padding-right: 60px;
+    padding-top: 2px;
+    font-size: 16px;
+    color: #ffffff;
+
+    box-sizing: border-box; /* keeps input within parent */
+}
+.auth-password-input::placeholder {
+    color: #575757;
+}
+.auth-password-input-icon {
+    width: 22px;
+    height: 22px;
+
+    position: absolute;
+    left: 18px;
+    top: 57%;              /* halfway down the container */
+    transform: translateY(-47%); /* shift up by half of its height */
+}
+.auth-password-input-toggle-button {
+    position: absolute;
+    left: 360px;
+    top: 57%;              /* halfway down the container */
+    transform: translateY(-42%); /* shift up by half of its height */
+}
+.auth-password-input-toggle-button:hover {
+    cursor: pointer;
+}
+.auth-password-forgot-password {
+    display: inline-block; /* or inline */
+    width: auto;           /* ensures it only fits the text */
+    font-size: 16px;
+    color: #575757;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
+
+    margin-top: 11px;
+
+    transition: color 0.25s ease;
+}
+.auth-password-forgot-password:hover {
+    color: #FFFFFF;
+    cursor: pointer;
+}
+
+.auth-login-group {
+    margin: 34px auto 0 auto;
+    width: 400px;
+}
+.auth-login-button {
+    width: 100%;
+    height: 55px;
+
+    background: #ffffff;
+    color: #000000;
+    font-size: 18px;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+    border-radius: 14px;
+    border: none;
+
+    cursor: pointer;
+}
+.auth-login-button:hover {
+    background-color: #D4D4D4;
+}
+.auth-login-line-group {
+    position: relative;
+    margin-top: 20px;
+    height: 24px; /* give enough height for text + line */
+}
+.auth-login-line-text {
+    position: absolute;
+    top: 0; /* top of container */
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0; /* remove default <p> margin */
+    color: #575757;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+    font-size: 20px;
+    background-color: #0F0F0F;
+    padding: 0 10px;
+    line-height: 1; /* prevents extra vertical spacing */
+}
+.auth-login-line {
+    position: absolute;
+    top: 3px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    border: none;
+    background-color: #575757;
+}
+.auth-login-with-google-group {
+    margin-top: 20px;
+
+    position: relative;
+    width: 100%;
+    height: 55px;
+}
+.auth-login-with-google-button {
+    width: 100%;
+    height: 100%;
+
+    background-color: transparent;
+    border: 1px solid #575757;
+    border-radius: 16px;
+
+    font-size: 18px;
+    color: #575757;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+
+    padding-left: 36px;
+}
+.auth-login-with-google-button:hover {
+    cursor: pointer;
+}
+.auth-login-with-google-symbol {
+    width: 18px;
+    height: 18px;
+
+    position: absolute;
+    top: 18px;
+    left: 160px;
+
+    pointer-events: none;
+}
+.auth-page-navigation-text {
+    display: block;          /* makes it a block-level element */
+    width: fit-content;      /* shrink to the text width */
+    margin: 15px auto 0;     /* auto left/right centers it */
+
+    color: #575757;
+    font-size: 16px;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
+    transition: color 0.25s ease;
+    text-align: center;      /* keeps text centered inside */
+}
+.auth-page-navigation-text:hover {
+    color: #FFFFFF;
+    cursor: pointer;
+}
+
+.auth-input-label {
+    font-size: 16px;
+    color: #D0D0D0;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
+
+    margin: 0;
+}
+.auth-signup-private-policy-group {
+    margin: 35px auto 0 auto;
+    width: 400px;
+
+    display: flex;        /* Make children horizontal */
+    flex-wrap: wrap;      /* Allow wrapping to next line */
+    gap: 5px;             /* Optional: space between elements */
+    align-items: center;  /* Vertically center elements */
+
+    transition: transform 0.5s ease;
+}
+.auth-signup-private-policy-group p {
+    margin: 0;
+}
+.privacy-policy-text {
+    color: #575757;
+    font-size: 15px;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
+}
+.privacy-policy-button {
+    color: #AFAFAF;
+    font-size: 15px;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
+
+    transition: color 0.25s ease;
+}
+.privacy-policy-button:hover {
+    color: #ffffff;
+    cursor: pointer;
+}
+.auth-signup-button {
+    display: block;
+    margin: 24px auto 20px auto;
+    width: 400px;
+    height: 55px;
+
+    background: #ffffff;
+    color: #000000;
+    font-size: 18px;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+    border-radius: 14px;
+    border: none;
+
+    cursor: pointer;
+}
+.auth-signup-button:hover {
+    background: #D4D4D4;
+}
+.auth-signup-button-loading {
+    display: block;
+    margin: 24px auto 20px auto;
+    width: 400px;
+    height: 55px;
+
+    background: #9C9C9C;
+    color: #000000;
+    font-size: 18px;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+    border-radius: 14px;
+    border: none;
+
+    pointer-events: none;  /* disables mouse events */
+    cursor: default;
+}
+.auth-error-input,
+.auth-error-input:focus {
+    margin-top: 10px;
+    height: 54px;
+    width: 100%;
+
+    background: #1A1A1A;
+    border-radius: 14px;
+
+    padding-left: 52px;
+    padding-right: 60px;
+    padding-top: 2px;
+    font-size: 16px;
+    color: #ffffff;
+
+    border: none;
+    box-sizing: border-box; /* keeps input within parent */
+    outline: 2px solid #DE3939;
+}
+.auth-error-input:-webkit-autofill {
+    background-color: #111 !important;
+    -webkit-text-fill-color: #fff !important;
+    font-size: 16px !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+.auth-error-input:-webkit-autofill:focus {
+    background-color: #111 !important;
+    -webkit-text-fill-color: #fff !important;
+    font-size: 16px !important;
+}
+.auth-error-label-invisible {
+    margin-top: 8px;
+    margin-bottom: 0;
+
+    font-size: 15px;
+    color: transparent;
+    background-color: transparent;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
+}
+.auth-error-label-visible {
+    margin-top: 8px;
+    margin-bottom: 0;
+
+    font-size: 15px;
+    color: #DE3939;
+    background-color: transparent;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
+}
+
+.signup-verification-h1 {
+    font-size: 42px;
+    color: #ffffff;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 700;
+
+    margin: 170px auto 0 auto;
+    width: 420px;
+    text-align: left;
+}
+.signup-verification-h2 {
+    font-size: 18px;
+    color: #ffffff;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
+
+    margin: 24px auto 0 752px;
+}
+.signup-verification-h3 {
+    font-size: 18px;
+    color: #ffffff;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
+
+    margin: 5px auto 0 752px;
+    width: 430px;
+}
+.signup-verification-input-group {
+    margin: 115px auto 0 752px;
+    display: flex;
+    gap: 22px; /* creates 30px space between inputs */
+}
+.signup-verification-input-default {
+    width: 72px;
+    height: 112px;
+    border: none;
+    border-radius: 14px;
+    background: #1A1A1A;
+
+    text-align: center;
+    font-size: 45px;
+    color: #ffffff;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 700;
+}
+.signup-verification-input-default:focus {
+    outline: none;
+}
+
+
