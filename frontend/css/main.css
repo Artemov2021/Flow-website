@@ -9,7 +9,6 @@ body {
   align-items: center;     /* center vertically */
   padding-top: 20px;
 }
-
 .timer-text {
   color: white;
   font-weight: 500;
@@ -21,21 +20,34 @@ body {
 }
 
 .login-button {
-  position: absolute;
-  right: 33px;       /* 10px from right edge */
-  top: 20px;         /* same vertical position as the container padding */
-  padding: 0;
-  background: transparent;
-  color: white;
-  font-family: 'Roboto', sans-serif;
-  font-weight: 500;
-  font-size: 23px;
-  border: none;
-  cursor: pointer;
-  transition: color 0.25s ease;
+    position: absolute;
+    right: 33px;       /* 10px from right edge */
+    top: 20px;         /* same vertical position as the container padding */
+    padding: 0;
+    background: transparent;
+    color: white;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+    font-size: 23px;
+    border: none;
+    cursor: pointer;
+    transition: color 0.25s ease;
 }
 .login-button:hover {
   color: #AEACAC;          
+}
+
+.user-section {
+    position: absolute;
+    right: 33px; /* <-- puts it 33px from right edge */
+    top: 20px;   /* aligns vertically with timer row */
+
+    cursor: pointer;
+}
+.avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
 }
 
 .text-container {
@@ -98,17 +110,20 @@ body {
 }
 
 
-
-
-
-
-
-
-
-
-
-
 /* optional states */
 .overlay-text .default { color: #575757; }
 .overlay-text .correct { color: #fff; }
 .overlay-text .incorrect { color: red; }
+
+.text-gradient-circle {
+    position: absolute;
+    width: 456px;
+    height: 203px;
+    left: 1037px;
+    top: 370px;
+    border-radius: 50%;
+
+    background: linear-gradient(89.99deg, rgba(15, 15, 15, 0.1065) 16.61%, rgba(15, 15, 15, 0.71) 99.99%);
+
+    pointer-events: none;
+}

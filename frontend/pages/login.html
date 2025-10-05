@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log In</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/auth.css">
+</head>
+<body>
+    <h1>Log In</h1>
+    <h2>Fill the following fields to log in</h2>
+
+    <div class="auth-email-group">
+        <p class="auth-input-label">Email</p>
+        <div class="auth-email-input-container">
+            <input class="auth-email-input" id="login-email-input" placeholder="Enter your email">
+            <img src="../assets/symbols/email.png" alt="email input icon" class="auth-email-input-icon">
+        </div>
+    </div>
+
+    <div class="auth-password-group">
+        <p class="auth-input-label">Password</p>
+        <div class="auth-password-input-container">
+            <input class="auth-password-input" type="password" id="login-password-input" placeholder="Enter your password">
+            <img src="../assets/symbols/password.png" alt="password input icon" class="auth-password-input-icon">
+            <img src="../assets/symbols/password-closed-eye.png" alt="password visibility button" class="auth-password-input-toggle-button" id="login-password-input-toggle-button">
+        </div>
+        <p class="auth-password-forgot-password" id="auth-password-forgot-password">Forgot the password?</p>
+    </div>
+
+    <div class="auth-login-group">
+        <button class="auth-login-button" id="auth-login-button">Log in</button>
+        <div class="auth-login-line-group">
+            <hr class="auth-login-line">
+            <p class="auth-login-line-text">or</p>
+        </div>
+        <div class="auth-login-with-google-group">
+            <button class="auth-login-with-google-button" id="auth-login-with-google-button">Google</button>
+            <img src="../assets/symbols/google.png" class="auth-login-with-google-symbol">
+        </div>
+    </div>
+
+    <p class="auth-page-navigation-text" id="auth-signup-navigation-text">Don’t have an account?</p>
+
+    <script type="module" src="../js/login.js"></script>
+</body>
+</html>
