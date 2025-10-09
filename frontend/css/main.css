@@ -45,8 +45,8 @@ body {
     cursor: pointer;
 }
 .avatar {
-    width: 44px;
-    height: 44px;
+    width: 46px;
+    height: 46px;
     border-radius: 50%;
 }
 
@@ -60,7 +60,6 @@ body {
     text-align: center;
     overflow: hidden;
 }
-
 /* viewport */
 .scroll-area {
     position: relative;
@@ -70,7 +69,6 @@ body {
     height: 50px;
     overflow: hidden;
 }
-
 /* the input sits on top */
 .text-input {
     height: 52px;
@@ -99,8 +97,6 @@ body {
     background: cornflowerblue;
     color: transparent;       /* text color when selected */
 }
-
-
 .overlay-text {
     margin: 0;
     font: 500 40px 'Roboto', sans-serif;
@@ -108,8 +104,6 @@ body {
     white-space: nowrap;
     z-index: 2;
 }
-
-
 /* optional states */
 .overlay-text .default { color: #575757; }
 .overlay-text .correct { color: #fff; }
@@ -126,4 +120,74 @@ body {
     background: linear-gradient(89.99deg, rgba(15, 15, 15, 0.1065) 16.61%, rgba(15, 15, 15, 0.71) 99.99%);
 
     pointer-events: none;
+}
+
+/* Menu */
+.menu-background {
+    width: 185px;
+
+
+    background-color: #171717;
+    border-radius: 16px;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+
+    position: fixed;
+    top: 72px;
+    right: 32px;
+    box-sizing: border-box;
+}
+.menu-button {
+    width: 169px;
+    height: 44px;
+
+    background-color: #171717;
+    border-radius: 10px;
+    transition: background-color 0.3s ease;
+
+    position: relative;
+    margin: 8px;
+
+    cursor: pointer;
+}
+.menu-button:hover {
+    background-color: #222222;
+}
+.menu-button-text {
+    color: #CECECE;
+    font-size: 17px;
+    font-family: 'Roboto', sans-serif;
+
+    position: absolute;
+    top: 12px;
+    left: 52px;
+    margin: 0;
+}
+.my-stats-button-symbol {
+    position: absolute;
+    top: 8px;
+    left: 15px;
+    margin: 0;
+}
+.settings-button-symbol {
+    position: absolute;
+    top: 11px;
+    left: 17px;
+    margin: 0;
+}
+.menu-logout-button-text {
+    color: #FF4545;
+    font-size: 17px;
+    font-family: 'Roboto', sans-serif;
+
+    position: absolute;
+    top: 12px;
+    left: 52px;
+    margin: 0;
+}
+.menu-logout-button-symbol {
+    position: absolute;
+    top: 12px;
+    left: 18px;
+    margin: 0;
 }
