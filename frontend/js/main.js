@@ -2,8 +2,10 @@ const input = document.getElementById("textInput");
 const overlayText = document.getElementById("overlayText");
 const timer = document.getElementById("timerText");
 const loginButton = document.getElementById("loginButton");
+const userSection = document.getElementById("user-section");
 
 // typed (white correct and red incorrect chars) and untyped (gradient) texts
+let email = null;
 let texts = [];
 let currentCaretPosition = 0;
 let isTimerRunning = false;
@@ -21,9 +23,17 @@ async function initMain() {
 
     input.setSelectionRange(0, 0);
 }
+async function setEmail() {
+    const res = await fetch("http://localhost:8080/get-signup-email", {
+        credentials: "include"
+    });
+    const data = await res.json();
+    email = data.data;
+    console.log("Email: "+email);
+}
 async function setPotentialAvatar() {
     try {
-        if (isThereUserEmail() && await isLocalStorageEmailInUsersDB()) {
+        if (isThereUserEmail() && await isEmailInUsersDB()) {
             setUserAvatar();
         }
     } catch (error) {
@@ -110,6 +120,8 @@ function setupMainListeners() {
         loginButton.addEventListener('click', () => {
             window.location.href = '../pages/login.html';
         });
+
+        userSection.style.top = "7px";
     }
 
     // Show tooltip in 1 sec
@@ -117,13 +129,12 @@ function setupMainListeners() {
 }
 
 async function setUserAvatar() {
-    const userSection = document.getElementById("user-section");
-
     userSection.innerHTML = `
         <div class="user-profile">
             <img src="../assets/symbols/user-profile-default.png" alt="User Avatar" class="avatar" id="main-avatar">
         </div>
     `;
+    userSection.style.top = "20px";
 
     const avatar = document.getElementById("main-avatar");
     avatar.addEventListener("click",(e) => {
@@ -144,11 +155,9 @@ async function setUserAvatar() {
 
 }
 function isThereUserEmail() {
-    const email = localStorage.getItem("userEmail");
     return email !== null && email !== "";
 }
-async function isLocalStorageEmailInUsersDB() {
-    const email = localStorage.getItem("userEmail");
+async function isEmailInUsersDB() {
     try {
         const response = await fetch("http://localhost:8080/is-user-in-users-db", {
             method: "POST",
@@ -411,10 +420,9 @@ function updateScroll() {
     overlayText.style.transform = `translateX(-${targetScroll}px)`;
 }
 
-localStorage.setItem("userEmail","artemovtymur@gmail.com");
 
 initMain();
-setPotentialAvatar();
+setEmail().then(setPotentialAvatar);
 setupMainListeners();
 
 

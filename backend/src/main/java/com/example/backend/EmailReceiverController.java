@@ -7,11 +7,9 @@ import jakarta.mail.Session;
 import jakarta.mail.Transport;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Properties;
 
@@ -40,14 +38,17 @@ public class EmailReceiverController {
     }
 
     @PostMapping("/send-signup-code")
-    @CrossOrigin(origins = "*") // allow any origin
-    public ApiResponse checkSignupEmail(@RequestBody Map<String,String> payload) {
-        String email = payload.get("email");
-        String password = payload.get("password");
+    @CrossOrigin(origins = "http://localhost:63343", allowCredentials = "true") // allow any origin
+    public ApiResponse checkSignupEmail(@RequestBody Request request,HttpSession session) {
+        String email = request.getEmail();
+        String hashedPassword = BCrypt.hashpw(request.getPassword(), BCrypt.gensalt());
+
+        session.setAttribute("signupEmail",email);
+        session.setAttribute("signupPassword",hashedPassword);
 
         try {
             if (!isUserInVerificationDB(email)) {
-                String generatedCode = addUserToVerificationDB(email,password);
+                String generatedCode = addUserToVerificationDB(email);
                 sendUserVerificationCodeEmail(email,generatedCode);
             }
             return new ApiResponse(true,email,null);
@@ -57,10 +58,22 @@ public class EmailReceiverController {
     }
 
 
+    @GetMapping("/get-signup-email")
+    @CrossOrigin(origins = "http://localhost:63343", allowCredentials = "true") // allow any origin
+    public ApiResponse getSignUpEmail(HttpSession session) {
+        try {
+            String email = (String) session.getAttribute("signupEmail");
+            return new ApiResponse(false,email,null);
+        } catch (Exception e) {
+            return new ApiResponse(false,null,e.getMessage());
+        }
+    }
+
+
     @PostMapping("/is-user-in-verification-db")
-    @CrossOrigin(origins = "*") // allow any origin
-    public ApiResponse isUserInVerificationDB(@RequestBody Map<String,String> payload) {
-        String email = payload.get("email");
+    @CrossOrigin(origins = "http://localhost:63343", allowCredentials = "true") // allow any origin
+    public ApiResponse isUserInVerificationDB(@RequestBody Request request) {
+        String email = request.getEmail();
 
         try {
             if (isUserInVerificationDB(email)) {
@@ -75,10 +88,10 @@ public class EmailReceiverController {
 
 
     @PostMapping("/is-typed-code-correct")
-    @CrossOrigin(origins = "*") // allow any origin
-    public ApiResponse isTypedCodeCorrect(@RequestBody Map<String,String> payload) {
-        String email = payload.get("email");
-        String typedCode = payload.get("typedCode");
+    @CrossOrigin(origins = "http://localhost:63343", allowCredentials = "true") // allow any origin
+    public ApiResponse isTypedCodeCorrect(@RequestBody Request request) {
+        String email = request.getEmail();
+        String typedCode = request.getTypedCode();
 
         try {
             String hashedCode = getHashedCode(email);
@@ -90,9 +103,9 @@ public class EmailReceiverController {
 
 
     @PostMapping("/delete-user-from-verification-db")
-    @CrossOrigin(origins = "*") // allow any origin
-    public ApiResponse deleteUserFromVerificationDB(@RequestBody Map<String,String> payload) {
-        String email = payload.get("email");
+    @CrossOrigin(origins = "http://localhost:63343", allowCredentials = "true") // allow any origin
+    public ApiResponse deleteUserFromVerificationDB(@RequestBody Request request) {
+        String email = request.getEmail();
 
         try {
             deleteUserFromVerificationDB(email);
@@ -104,12 +117,13 @@ public class EmailReceiverController {
 
 
     @PostMapping("/sign-up-user")
-    @CrossOrigin(origins = "*") // allow any origin
-    public ApiResponse signUpUser(@RequestBody Map<String,String> payload) {
-        String email = payload.get("email");
+    @CrossOrigin(origins = "http://localhost:63343", allowCredentials = "true") // allow any origin
+    public ApiResponse signUpUser(@RequestBody Request request,HttpSession session) {
+        String email = request.getEmail();
+        String password = (String) session.getAttribute("signupPassword");
 
         try {
-            signUpUser(email);
+            signUpUser(email,password);
             return new ApiResponse(true,null,null);
         } catch (Exception e) {
             return new ApiResponse(false,null,e.getMessage());
@@ -118,9 +132,9 @@ public class EmailReceiverController {
 
 
     @PostMapping("/is-user-in-users-db")
-    @CrossOrigin(origins = "*") // allow any origin
-    public ApiResponse isUserNnUsersDB(@RequestBody Map<String,String> payload) {
-        String email = payload.get("email");
+    @CrossOrigin(origins = "http://localhost:63343", allowCredentials = "true") // allow any origin
+    public ApiResponse isUserNnUsersDB(@RequestBody Request request) {
+        String email = request.getEmail();
 
         try {
             boolean isUserInUsersDB = isUserInUsersDB(email);
@@ -144,9 +158,8 @@ public class EmailReceiverController {
             return rs.next();
         }
     }
-    private String addUserToVerificationDB(String email,String password) throws Exception {
-        String statement = "INSERT INTO verification_codes (email,code,password,created_at) VALUES (?,?,?,?)";
-        String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
+    private String addUserToVerificationDB(String email) throws Exception {
+        String statement = "INSERT INTO verification_codes (email,code,created_at) VALUES (?,?,?)";
         String generatedCode = getRandomVerificationCode();
         String hashedRandomCode = BCrypt.hashpw(generatedCode, BCrypt.gensalt());
 
@@ -154,8 +167,7 @@ public class EmailReceiverController {
              PreparedStatement preparedStatement = conn.prepareStatement(statement)) {
             preparedStatement.setString(1, email);
             preparedStatement.setString(2,hashedRandomCode);
-            preparedStatement.setString(3,hashedPassword);
-            preparedStatement.setString(4,getCurrentTime());
+            preparedStatement.setString(3,getCurrentTime());
 
             preparedStatement.executeUpdate();
         }
@@ -252,26 +264,15 @@ public class EmailReceiverController {
             System.out.println("Rows deleted: " + rowsAffected);
         }
     }
-    private void signUpUser(String email) throws Exception {
+    private void signUpUser(String email,String password) throws Exception {
         String statement = "INSERT INTO users (email,password) VALUES (?,?)";
-        String hashedPassword = getHashedPasswordFromVerificationDB(email);
 
         try (Connection conn = DriverManager.getConnection(DB_URL);
              PreparedStatement preparedStatement = conn.prepareStatement(statement)) {
             preparedStatement.setString(1,email);
-            preparedStatement.setString(2,hashedPassword);
+            preparedStatement.setString(2,password);
 
             preparedStatement.executeUpdate();
-        }
-    }
-    private String getHashedPasswordFromVerificationDB(String email) throws Exception {
-        String statement = "SELECT password FROM verification_codes WHERE email = ?";
-
-        try (Connection conn = DriverManager.getConnection(DB_URL);
-             PreparedStatement stmt = conn.prepareStatement(statement)) {
-            stmt.setString(1, email);
-            ResultSet rs = stmt.executeQuery();
-            return rs.getString("password");
         }
     }
     private boolean isUserInUsersDB(String email) throws Exception {
@@ -287,7 +288,31 @@ public class EmailReceiverController {
 
 }
 
+class Request {
+    private String email;
+    private String password;
+    private String typedCode;
 
+    public void setEmail(String email) {
+        this.email = email;
+    }
+    public void setPassword(String password) {
+        this.password = password;
+    }
+    public void setTypedCode(String typedCode) {
+        this.typedCode = typedCode;
+    }
+
+    public String getEmail() {
+        return this.email;
+    }
+    public String getPassword() {
+        return this.password;
+    }
+    public String getTypedCode() {
+        return this.typedCode;
+    }
+}
 class ApiResponse {
     private boolean success;
     private Object data;

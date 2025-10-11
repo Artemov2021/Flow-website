@@ -5,15 +5,21 @@ const inputsContainer = document.getElementById("signup-verification-input-group
 const inputs = Array.from(inputsContainer.querySelectorAll("input"));
 const signupVerificationErrorLabel = document.getElementById("signup-verification-error-label");
 
-function initSignupVerification() {
+let email = "example@gmail.com";
+
+async function initSignupVerification() {
+    await setEmail();
     setH2();
     setupSignupVerificationListeners();
 }
+async function setEmail() {
+    const res = await fetch("http://localhost:8080/get-signup-email", {
+        credentials: "include"
+    });
+    const data = await res.json();
+    email = data.data;
+}
 function setH2() {
-    let email = localStorage.getItem("signUpEmail");
-    if (!email) {
-        email = "example@gmail.com";
-    }
     signupVerificationH2.textContent = `Enter the 4-digit code we sent to your email (${email}).`;
 }
 function setupSignupVerificationListeners() {
@@ -59,8 +65,6 @@ async function checkAndSignup() {
             await signUpUser();
             showMainWindow();
             await deleteFromVerificationDB();
-            setUserEmailItem();
-            deleteSignupEmailItem();
         } else {
             showError();
         }
@@ -72,8 +76,6 @@ async function checkAndSignup() {
 
 }
 async function isUserInVerificationDB() {
-    const email = localStorage.getItem("signUpEmail");
-
     const response = await fetch("http://localhost:8080/is-user-in-verification-db", {
         method: "POST",
         headers: {
@@ -88,7 +90,6 @@ async function isUserInVerificationDB() {
     return data.success && isUserInVerificationDB;
 }
 async function isTypedCodeCorrect() {
-    const email = localStorage.getItem("signUpEmail");
     const typedCode = inputs.map(input => input.value).join("");
 
     const response = await fetch("http://localhost:8080/is-typed-code-correct", {
@@ -107,8 +108,6 @@ async function isTypedCodeCorrect() {
     return data.success && isTypedCodeCorrect;
 }
 async function deleteFromVerificationDB() {
-    const email = localStorage.getItem("signUpEmail");
-
     const response = await fetch("http://localhost:8080/delete-user-from-verification-db", {
         method: "POST",
         headers: {
@@ -123,14 +122,13 @@ async function deleteFromVerificationDB() {
     }
 }
 async function signUpUser() {
-    const email = localStorage.getItem("signUpEmail");
-
     const response = await fetch("http://localhost:8080/sign-up-user", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
         body: JSON.stringify({email: email}),
+        credentials: "include"
     });
 
     const data = await response.json();
@@ -156,16 +154,7 @@ function setDefaultStyle() {
     signupVerificationErrorLabel.textContent = "";
 }
 function showMainWindow() {
-    const email = localStorage.getItem("signUpEmail");
-    localStorage.setItem("userEmail", email);
     window.location.href = '../pages/index.html';
-}
-function deleteSignupEmailItem() {
-    localStorage.removeItem("signUpEmail");
-}
-function setUserEmailItem() {
-    const email = localStorage.getItem("signUpEmail");
-    localStorage.setItem("userEmail",email);
 }
 
 initSignupVerification();

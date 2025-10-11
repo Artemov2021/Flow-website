@@ -134,12 +134,14 @@ async function sendSignupCode() {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({email: email,password: password}),
+            credentials: "include"
         });
 
         const data = await response.json();
 
         if (data.success) {
-            showSignupVerificationPage(data.data);
+            showSignupVerificationPage();
+            setSignupButtonDefaultStyle();
         } else {
             alert("Failed to send verification email.");
             setSignupButtonDefaultStyle();
@@ -149,14 +151,14 @@ async function sendSignupCode() {
             console.error("Error sending signup code:", error.message);
             console.error(error.stack);
             alert("An error occurred: " + error.message);
+            setSignupButtonDefaultStyle();
         } else {
             console.error("Unknown error:", error);
             alert("An unknown error occurred");
         }
     }
 }
-function showSignupVerificationPage(email) {
-    localStorage.setItem("signUpEmail", email);
+function showSignupVerificationPage() {
     window.location.href = '../pages/signup-verification.html';
 }
 
