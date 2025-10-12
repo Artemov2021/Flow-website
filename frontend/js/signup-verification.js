@@ -13,7 +13,7 @@ async function initSignupVerification() {
     setupSignupVerificationListeners();
 }
 async function setEmail() {
-    const res = await fetch("http://localhost:8080/get-signup-email", {
+    const res = await fetch("http://localhost:8080/get-session-email", {
         credentials: "include"
     });
     const data = await res.json();
@@ -39,7 +39,7 @@ function setupSignupVerificationListeners() {
             }
         }
     });
-    inputsContainer.addEventListener('keydown', (e) => {
+    inputsContainer.addEventListener('keydown', async (e) => {
         const input = e.target;
         if (input && e.key === 'Backspace' && !input.value) {
             const inputs = Array.from(inputsContainer.children);
@@ -48,7 +48,7 @@ function setupSignupVerificationListeners() {
                 inputs[index - 1].focus(); // backspace stays instant
             }
         } else if (e.key === "Enter") {
-            checkAndSignup();
+            await checkAndSignup();
         }
     });
 

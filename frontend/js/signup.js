@@ -1,8 +1,8 @@
 const signupEmailInput = document.getElementById("signup-email-input");
 const toggleSignupPasswordButton = document.getElementById("signup-password-input-toggle-button");
 const signupPasswordInput = document.getElementById("signup-password-input");
-const authEmailErrorLabel = document.getElementById("auth-email-error-label");
-const authPasswordErrorLabel = document.getElementById("auth-password-error-label");
+const authEmailErrorLabel = document.getElementById("signup-email-error-label");
+const authPasswordErrorLabel = document.getElementById("signup-password-error-label");
 const privacyPolicyButton = document.getElementById("privacy-policy-button");
 const termsOfServiceButton = document.getElementById("terms-of-service-button");
 const signupButton = document.getElementById("auth-signup-button");
@@ -30,22 +30,22 @@ function setupSignupListeners() {
     })
 
     // Sign up button listener
-    signupButton?.addEventListener("click",() => {
-        setSignupButtonLoadingStyle();
-        if (isSignupValid()) {
-            sendSignupCode();
+    signupButton?.addEventListener("click",async () => {
+        try {
+            setSignupButtonLoadingStyle();
+            await checkAndSendCode();
+            setSignupButtonDefaultStyle();
+        } catch (error) {
+            alert("Error: "+error.message);
+            setSignupButtonDefaultStyle();
         }
     });
 
     // Password field enter listener
-    signupPasswordInput.addEventListener("keydown", (e) => {
+    signupPasswordInput.addEventListener("keydown", async (e) => {
         if (e.key === "Enter") {
             e.preventDefault(); // optional: prevent form submission if inside a form
-
-            setSignupButtonLoadingStyle();
-            if (isSignupValid()) {
-                sendSignupCode();
-            }
+            await checkAndSendCode();
         }
     });
 
@@ -64,31 +64,63 @@ function setSignupButtonLoadingStyle() {
 function setSignupButtonDefaultStyle() {
     signupButton.className = "auth-signup-button";
 }
-function isSignupValid() {
-    const email = signupEmailInput.value.trim();
-    const password = signupPasswordInput.value.trim();
-
-    // Basic regex check
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d).{12,}$/;
-
+async function checkAndSendCode() {
     setEmailDefaultStyle();
     setPasswordDefaultStyle();
 
-    if (emailPattern.test(email) && passwordPattern.test(password)) {
-        return true;
+    if (isEmailValid() && isPasswordValid() && !await isUserInUsersDB()) {
+        await sendSignupCode();
+        await setSessionEmail();
+        return;
     }
 
-    if (!emailPattern.test(email)) {
+    if (!isEmailValid()) {
         setEmailErrorStyle("Please enter a valid email address");
-        setSignupButtonDefaultStyle();
-    }
-    if (!passwordPattern.test(password)) {
-        setPasswordErrorStyle("Password must be 12+ chars, letters & numbers");
-        setSignupButtonDefaultStyle();
     }
 
-    return false;
+    if (!isPasswordValid()) {
+        setPasswordErrorStyle("Password must be 12+ length, letters & numbers");
+    }
+
+    if (await isUserInUsersDB()) {
+        setEmailErrorStyle("Email address is already taken");
+    }
+}
+function isEmailValid() {
+    const email = signupEmailInput.value.trim();
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    return emailPattern.test(email);
+}
+function isPasswordValid() {
+    const password = signupPasswordInput.value.trim();
+    const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d).{12,}$/;
+
+    return passwordPattern.test(password);
+}
+async function isUserInUsersDB() {
+    const email = signupEmailInput.value.trim();
+
+    try {
+        const response = await fetch("http://localhost:8080/is-user-in-users-db", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({email: email}),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            const isUserInUsersDB = data.data;
+            return isUserInUsersDB;
+        } else {
+            alert(data.errorMessage);
+        }
+    } catch (error) {
+        alert(error.message);
+    }
 }
 function setEmailErrorStyle(error) {
     // set error label
@@ -141,9 +173,38 @@ async function sendSignupCode() {
 
         if (data.success) {
             showSignupVerificationPage();
-            setSignupButtonDefaultStyle();
         } else {
             alert("Failed to send verification email.");
+        }
+    } catch (error) {
+        if (error instanceof Error) {
+            console.error("Error sending signup code:", error.message);
+            console.error(error.stack);
+            alert("An error occurred: " + error.message);
+            setSignupButtonDefaultStyle();
+        } else {
+            console.error("Unknown error:", error);
+            alert("An unknown error occurred");
+        }
+    }
+}
+async function setSessionEmail() {
+    const email = signupEmailInput.value.trim();
+
+    try {
+        const response = await fetch("http://localhost:8080/set-session-email", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({email: email}),
+            credentials: "include"
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+            alert("Failed to set session email");
             setSignupButtonDefaultStyle();
         }
     } catch (error) {

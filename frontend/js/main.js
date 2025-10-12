@@ -24,7 +24,7 @@ async function initMain() {
     input.setSelectionRange(0, 0);
 }
 async function setEmail() {
-    const res = await fetch("http://localhost:8080/get-signup-email", {
+    const res = await fetch("http://localhost:8080/get-session-email", {
         credentials: "include"
     });
     const data = await res.json();
@@ -122,6 +122,7 @@ function setupMainListeners() {
         });
 
         userSection.style.top = "7px";
+        userSection.style.right = "22px";
     }
 
     // Show tooltip in 1 sec
@@ -135,6 +136,7 @@ async function setUserAvatar() {
         </div>
     `;
     userSection.style.top = "20px";
+    userSection.style.right = "33px";
 
     const avatar = document.getElementById("main-avatar");
     avatar.addEventListener("click",(e) => {
@@ -178,7 +180,6 @@ async function isEmailInUsersDB() {
     } catch (error) {
         alert(error.message);
     }
-
 }
 function lockCaret() {
     input.setSelectionRange(currentCaretPosition,currentCaretPosition);

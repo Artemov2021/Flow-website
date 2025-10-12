@@ -39,11 +39,11 @@ public class EmailReceiverController {
 
     @PostMapping("/send-signup-code")
     @CrossOrigin(origins = "http://localhost:63343", allowCredentials = "true") // allow any origin
-    public ApiResponse checkSignupEmail(@RequestBody Request request,HttpSession session) {
+    public ApiResponse sendSignupEmail(@RequestBody Request request,HttpSession session) {
         String email = request.getEmail();
         String hashedPassword = BCrypt.hashpw(request.getPassword(), BCrypt.gensalt());
 
-        session.setAttribute("signupEmail",email);
+        session.setAttribute("email",email);
         session.setAttribute("signupPassword",hashedPassword);
 
         try {
@@ -58,14 +58,28 @@ public class EmailReceiverController {
     }
 
 
-    @GetMapping("/get-signup-email")
+    @GetMapping("/get-session-email")
     @CrossOrigin(origins = "http://localhost:63343", allowCredentials = "true") // allow any origin
-    public ApiResponse getSignUpEmail(HttpSession session) {
+    public ApiResponse getSessionEmail(HttpSession session) {
         try {
-            String email = (String) session.getAttribute("signupEmail");
-            return new ApiResponse(false,email,null);
+            String email = (String) session.getAttribute("email");
+            return new ApiResponse(true,email,null);
         } catch (Exception e) {
             return new ApiResponse(false,null,e.getMessage());
+        }
+    }
+
+
+    @PostMapping("/set-session-email")
+    @CrossOrigin(origins = "http://localhost:63343", allowCredentials = "true") // allow any origin
+    public ApiResponse setSessionEmail(@RequestBody Request request,HttpSession session) {
+        String email = request.getEmail();
+
+        try {
+            session.setAttribute("email",email);
+            return new ApiResponse(true,true,null);
+        } catch (Exception e) {
+            return new ApiResponse(false,false,e.getMessage());
         }
     }
 
@@ -91,11 +105,11 @@ public class EmailReceiverController {
     @CrossOrigin(origins = "http://localhost:63343", allowCredentials = "true") // allow any origin
     public ApiResponse isTypedCodeCorrect(@RequestBody Request request) {
         String email = request.getEmail();
-        String typedCode = request.getTypedCode();
+        String plainTypedCode = request.getTypedCode();
 
         try {
             String hashedCode = getHashedCode(email);
-            return new ApiResponse(true,BCrypt.checkpw(typedCode,hashedCode),null);
+            return new ApiResponse(true,BCrypt.checkpw(plainTypedCode,hashedCode),null);
         } catch (Exception e) {
             return new ApiResponse(false,null,e.getMessage());
         }
@@ -133,7 +147,7 @@ public class EmailReceiverController {
 
     @PostMapping("/is-user-in-users-db")
     @CrossOrigin(origins = "http://localhost:63343", allowCredentials = "true") // allow any origin
-    public ApiResponse isUserNnUsersDB(@RequestBody Request request) {
+    public ApiResponse isUserInUsersDB(@RequestBody Request request) {
         String email = request.getEmail();
 
         try {
@@ -144,8 +158,23 @@ public class EmailReceiverController {
         }
     }
 
-    
 
+    @PostMapping("/is-plain-password-correct")
+    @CrossOrigin(origins = "http://localhost:63343", allowCredentials = "true") // allow any origin
+    public ApiResponse isPlainPasswordCorrect(@RequestBody Request request) {
+        String email = request.getEmail();
+        String plainPassword = request.getPassword();
+
+        try {
+            if (isPlainPasswordCorrect(email,plainPassword)) {
+                return new ApiResponse(true,true,null);
+            } else {
+                return new ApiResponse(true,false,null);
+            }
+        } catch (Exception e) {
+            return new ApiResponse(false,email,e.getMessage());
+        }
+    }
 
 
     private boolean isUserInVerificationDB(String email) throws Exception {
@@ -283,6 +312,17 @@ public class EmailReceiverController {
             stmt.setString(1, email);
             ResultSet rs = stmt.executeQuery();
             return rs.next();
+        }
+    }
+    private boolean isPlainPasswordCorrect(String email,String plainPassword) throws SQLException {
+        String statement = "SELECT password FROM users WHERE email = ?";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement stmt = conn.prepareStatement(statement)) {
+            stmt.setString(1, email);
+            ResultSet rs = stmt.executeQuery();
+            String hashedPasswordFromDB = rs.getString("password");
+            return BCrypt.checkpw(plainPassword,hashedPasswordFromDB);
         }
     }
 

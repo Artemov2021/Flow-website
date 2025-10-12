@@ -157,6 +157,21 @@ h2 {
 .auth-login-button:hover {
     background-color: #D4D4D4;
 }
+.auth-login-button-loading {
+    width: 100%;
+    height: 55px;
+
+    background: #9C9C9C;
+    color: #000000;
+    font-size: 18px;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+    border-radius: 14px;
+    border: none;
+
+    pointer-events: none;  /* disables mouse events */
+    cursor: default;
+}
 .auth-login-line-group {
     position: relative;
     margin-top: 20px;
