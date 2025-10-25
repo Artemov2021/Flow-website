@@ -30,7 +30,8 @@ function setupSignupListeners() {
     })
 
     // Sign up button listener
-    signupButton?.addEventListener("click",async () => {
+    signupButton?.addEventListener("click",async (e) => {
+        e.preventDefault(); // must prevent default
         try {
             setSignupButtonLoadingStyle();
             await checkAndSendCode();
@@ -117,9 +118,11 @@ async function isUserInUsersDB() {
             return isUserInUsersDB;
         } else {
             alert(data.errorMessage);
+            return false;
         }
     } catch (error) {
         alert(error.message);
+        return false;
     }
 }
 function setEmailErrorStyle(error) {
@@ -168,6 +171,13 @@ async function sendSignupCode() {
             body: JSON.stringify({email: email,password: password}),
             credentials: "include"
         });
+
+        if (!response.ok) {
+            const text = await response.text();
+            console.error("Backend returned error:", response.status, text);
+            alert("Backend error: " + response.status);
+            return;
+        }
 
         const data = await response.json();
 

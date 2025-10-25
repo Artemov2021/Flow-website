@@ -9,22 +9,22 @@
 </head>
 <body>
   <div class="top">
-    <img src="../assets/symbols/timer.png" alt="timer icon" class="timer-icon">
+    <img src="../assets/symbols/timer.png" alt="timer icon" class="timer-icon" id="timer-icon">
     <p class="timer-text" id="timerText">1:00</p>
     <div id="user-section" class="user-section">
         <button class="login-button" id="loginButton">Log in</button>
     </div>
   </div>
 
-  <div class="text-container">
+  <div class="text-container" id="text-container">
       <div class="scroll-area" id="scrollArea">
           <input type="text" class="text-input" id="textInput" autofocus>
           <div class="overlay-text" id="overlayText"></div>
       </div>
+
   </div>
 
-  <div class="text-gradient-circle"></div>
-
+  <div class="text-gradient-circle" id="text-gradient-circle"></div>
 
   <!-- Include the main.js script -->
   <script type="module" src="../js/main.js"></script>

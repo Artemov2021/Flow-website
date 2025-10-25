@@ -1,18 +1,25 @@
 const input = document.getElementById("textInput");
 const overlayText = document.getElementById("overlayText");
 const timer = document.getElementById("timerText");
+const timerIcon = document.getElementById("timer-icon");
 const loginButton = document.getElementById("loginButton");
 const userSection = document.getElementById("user-section");
+const textContainer = document.getElementById("text-container");
+const textGradientCircle = document.getElementById("text-gradient-circle");
 
 // typed (white correct and red incorrect chars) and untyped (gradient) texts
+let userId = null;
 let email = null;
 let texts = [];
 let currentCaretPosition = 0;
 let isTimerRunning = false;
 let isCurrentWordCorrect = true;
-let correctWords = 0;
 let tooltipBackground = null;
 let isMenuOpened = false;
+let totalSeconds = 3;
+
+let correctWords = 0;
+let totalTypedWords = 0;
 
 async function initMain() {
     const text = await getRandomText();
@@ -29,17 +36,31 @@ async function setEmail() {
     });
     const data = await res.json();
     email = data.data;
-    console.log("Email: "+email);
+}
+async function setUserId() {
+    const response = await fetch("http://localhost:8080/get-session-user_id", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({email}),
+    });
+    const data = await response.json();
+
+    if (data.success) {
+        userId = data.data;
+    } else {
+        alert("error: "+data.errorMessage);
+    }
 }
 async function setPotentialAvatar() {
     try {
         if (isThereUserEmail() && await isEmailInUsersDB()) {
-            setUserAvatar();
+            await setUserAvatar();
         }
     } catch (error) {
         alert(error.message);
     }
-
 }
 function setupMainListeners() {
     // Stop caret from moving on click
@@ -61,13 +82,14 @@ function setupMainListeners() {
 
         if (e.key.length === 1) {
             if (!isTimerRunning) {
-                startTimer();
+                startTimer(e);
             }
 
             checkAndRemoveTooltip();
 
             const expectedChar = input.value.charAt(currentCaretPosition);
             const typedChar = e.key;
+            const nextChar = input.value.charAt(currentCaretPosition+1);
 
             const correctCharacter = (expectedChar !== " " && typedChar === expectedChar);
             const incorrectCharacter = (expectedChar !== " " && typedChar !== expectedChar);
@@ -82,15 +104,20 @@ function setupMainListeners() {
                     isCurrentWordCorrect = false;
                     highlightIncorrectChar(currentCaretPosition);
                 } else if (correctSpace) {
-                    recountCorrectWords();
                     addSpace();
                     isCurrentWordCorrect = true;
                 }
+
                 currentCaretPosition++;
                 input.setSelectionRange(currentCaretPosition,currentCaretPosition);
                 updateScroll();
             } else {
                 lockCaret();
+            }
+
+            if (nextChar === " ") {
+                totalTypedWords++;
+                recountCorrectWords();
             }
 
             e.preventDefault();
@@ -125,8 +152,9 @@ function setupMainListeners() {
         userSection.style.right = "22px";
     }
 
-    // Show tooltip in 1 sec
-    setTimeout(showTooltip, 2000);
+    setTimeout(function () {
+        checkAndShowTextTooltip("As you start typing, the timer starts running");
+    }, 2000);
 }
 
 async function setUserAvatar() {
@@ -192,16 +220,18 @@ async function getRandomText() {
 
     return await response.text();
 }
-function showTooltip() {
+function checkAndShowTextTooltip(text) {
     if (currentCaretPosition !== 0) {
         return;
     }
-
+    showTooltip(text,"57px");
+}
+function showTooltip(text,topMarginInPx) {
     tooltipBackground = document.createElement("div");
     tooltipBackground.style.background = "#161616";
     tooltipBackground.style.borderRadius = "16px";
 
-    tooltipBackground.style.top = "57px";
+    tooltipBackground.style.top = topMarginInPx;
     tooltipBackground.style.position = "absolute";
     tooltipBackground.style.left = "50%";
     tooltipBackground.style.transform = "translateX(-50%)";
@@ -212,7 +242,7 @@ function showTooltip() {
 
 
     const tooltipText = document.createElement("p");
-    tooltipText.textContent = "As you start typing, the timer starts running";
+    tooltipText.textContent = text;
     tooltipText.style.color = "#CECECE";
     tooltipText.style.fontSize = "16px";
     tooltipText.style.fontFamily = "'Roboto', sans-serif";
@@ -228,14 +258,19 @@ function showTooltip() {
     document.body.appendChild(tooltipBackground);
 }
 function checkAndRemoveTooltip() {
-    if (tooltipBackground !== null && tooltipBackground !== "") {
+    if (tooltipBackground instanceof HTMLElement) {
         tooltipBackground.style.opacity = "0";
         tooltipBackground.style.transform = "translateX(-50%) translateY(-10px)";
 
-        tooltipBackground.addEventListener("transitionend", () => {
-            document.body.removeChild(tooltipBackground);
+        const handleTransitionEnd = () => {
+            if (tooltipBackground && tooltipBackground.parentNode) {
+                tooltipBackground.parentNode.removeChild(tooltipBackground);
+            }
+            tooltipBackground?.removeEventListener("transitionend", handleTransitionEnd);
             tooltipBackground = null;
-        });
+        };
+
+        tooltipBackground.addEventListener("transitionend", handleTransitionEnd, { once: true });
     }
 }
 function showMenu() {
@@ -284,6 +319,13 @@ function showMenu() {
     const logoutButton = document.createElement("div");
     logoutButton.id = "logout-button"
     logoutButton.className = "menu-button";
+    logoutButton.addEventListener("click",async (e) => {
+        e.preventDefault();
+        hideMenu();
+        isMenuOpened = false;
+        await deleteSessionEmail();
+        reloadMainPage();
+    });
 
     const logoutButtonText = document.createElement("p");
     logoutButtonText.textContent = "Log out";
@@ -328,6 +370,28 @@ function hideMenu() {
         { once: true } // ensures it runs only once
     );
 }
+async function deleteSessionEmail() {
+    try {
+        const response = await fetch("http://localhost:8080/delete-session-email", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            credentials: "include"
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+            alert(data.errorMessage);
+        }
+    } catch (error) {
+        alert(error.message);
+    }
+}
+function reloadMainPage() {
+    window.location.href = '../pages/index.html';
+}
 
 function highlightCorrectChar(charPosition) {
     const correctChar = input.value.charAt(charPosition);
@@ -367,11 +431,11 @@ function addSpace() {
     //overlayText.innerHTML = texts.join("");
 }
 
-function startTimer() {
+function startTimer(e) {
+    if (e) e.preventDefault();
     isTimerRunning = true;
-    let totalSeconds = 59; // 1 minute
 
-    const interval = setInterval(() => {
+    const interval = setInterval(async () => {
         const minutes = Math.floor(totalSeconds / 60);
         const seconds = totalSeconds % 60;
 
@@ -381,11 +445,17 @@ function startTimer() {
         if (totalSeconds === 0) {
             clearInterval(interval);      // stop the timer
             isTimerRunning = false;
-            timer.textContent = `Correct words: ${correctWords}`;
+            await onTimerEnd(e);
+        } else {
+            totalSeconds--;
         }
 
-        totalSeconds--;
     }, 1000);
+}
+async function onTimerEnd() {
+    hideMainPageAndShowResults();
+    await checkAndShowRecords();
+    await checkAndSaveResults();
 }
 function recountCorrectWords() {
     if (isCurrentWordCorrect) {
@@ -420,11 +490,270 @@ function updateScroll() {
     // 🔑 Move overlay text left to match scroll
     overlayText.style.transform = `translateX(-${targetScroll}px)`;
 }
+function hideMainPageAndShowResults() {
+    makeTextInputDisabled();
+    hideTimer();
+    hideText();
+    showSpeedTitle();
+    showSpeedLabel();
+    showTotalWordsLabel();
+    showTryAgainButton();
+}
+function makeTextInputDisabled() {
+    input.disabled = true;
+}
+function hideTimer() {
+    timer.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+    timer.style.transform = 'translateY(-20px)';
+    timer.style.opacity = '0';
+
+    timerIcon.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+    timerIcon.style.transform = 'translateY(-20px)';
+    timerIcon.style.opacity = '0';
+}
+function hideText() {
+    textContainer.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+    textContainer.style.transform = 'translate(-50%, calc(-50% + 40px))';
+    textContainer.style.opacity = '0';
+
+    textGradientCircle.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+    textGradientCircle.style.transform = 'translateY(40px)';
+    textGradientCircle.style.opacity = '0';
+}
+function showSpeedTitle() {
+    const speedTitle = document.createElement("p");
+    speedTitle.textContent = "Your typing speed is";
+    speedTitle.style.display = "block";
+    speedTitle.style.margin = "180px auto 0 auto";
+    speedTitle.style.width = "300px";
+    speedTitle.style.fontSize = "32px";
+    speedTitle.style.fontFamily = "'Roboto', sans-serif";
+    speedTitle.style.fontWeight = "600";
+    speedTitle.style.textAlign = "center"; // optional: center text
+
+    // Gradient text
+    speedTitle.style.background = "linear-gradient(90deg, #FFFFFF 0%, #595959 100%)";
+    speedTitle.style.webkitBackgroundClip = "text";
+    speedTitle.style.backgroundClip = "text";
+    speedTitle.style.color = "transparent";
+
+    // Start hidden & slightly to the right
+    speedTitle.style.opacity = "0";
+    speedTitle.style.transform = "translateX(18px)";
+    speedTitle.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+
+    document.body.appendChild(speedTitle);
+
+    // Delay 1 second before showing
+    setTimeout(() => {
+        speedTitle.style.opacity = "1";
+        speedTitle.style.transform = "translateX(0)";
+    }, 350);
+}
+function showSpeedLabel() {
+    const speedLabel = document.createElement("p");
+    speedLabel.textContent = "0 WPM";
+    speedLabel.style.display = "block";
+    speedLabel.style.margin = "40px auto 0 auto";
+    speedLabel.style.width = "384px";
+    speedLabel.style.fontSize = "95px";
+    speedLabel.style.fontFamily = "'Roboto', sans-serif";
+    speedLabel.style.fontWeight = "700";
+    speedLabel.style.textAlign = "center"; // optional: center text
+    speedLabel.style.color = "white";
+
+    // Start hidden & slightly to the right
+    speedLabel.style.opacity = "0";
+    speedLabel.style.transform = "translateX(18px)";
+    speedLabel.style.transition = "opacity 0.7s ease, transform 0.7s ease";
+
+    document.body.appendChild(speedLabel);
+
+    // Delay 1 second before showing
+    setTimeout(() => {
+        speedLabel.style.opacity = "1";
+        speedLabel.style.transform = "translateX(0)";
+    }, 650);
+
+    // Count up animation
+    let current = 0;
+    const duration = 1500;
+    const steps = 60; // smooth animation
+    const increment = correctWords / steps;
+
+    setTimeout(() => {
+        const counter = setInterval(() => {
+            current += increment;
+            if (current >= correctWords) {
+                current = correctWords;
+                clearInterval(counter);
+            }
+            speedLabel.textContent = Math.floor(current) + " WPM";
+        }, duration / steps);
+    }, 700); // start counting after fade-in
+}
+function showTotalWordsLabel() {
+    const totalWordsLabel = document.createElement("p");
+    totalWordsLabel.textContent = "Total words: "+totalTypedWords;
+    totalWordsLabel.style.display = "block";
+    totalWordsLabel.style.margin = "40px auto 0 auto";
+    totalWordsLabel.style.width = "384px";
+    totalWordsLabel.style.fontSize = "26px";
+    totalWordsLabel.style.fontFamily = "'Roboto', sans-serif";
+    totalWordsLabel.style.fontWeight = "500";
+    totalWordsLabel.style.textAlign = "center"; // optional: center text
+    totalWordsLabel.style.color = "#848484";
+
+    // Start hidden & slightly to the right
+    totalWordsLabel.style.opacity = "0";
+    totalWordsLabel.style.transform = "translateX(18px)";
+    totalWordsLabel.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+
+    document.body.appendChild(totalWordsLabel);
+
+    // Delay 1 second before showing
+    setTimeout(() => {
+        totalWordsLabel.style.opacity = "1";
+        totalWordsLabel.style.transform = "translateX(0)";
+    }, 2150);
+}
+function showTryAgainButton() {
+    const tryAgainButtonContainer = document.createElement("div");
+    tryAgainButtonContainer.style.position = "fixed"; // stick to viewport
+    tryAgainButtonContainer.style.left = "0";         // horizontal centering setup
+    tryAgainButtonContainer.style.right = "0";
+    tryAgainButtonContainer.style.margin = "150px auto 20px auto"; // keep your margin
+    tryAgainButtonContainer.style.cursor = "pointer";
+    tryAgainButtonContainer.style.width = "300px";
+    tryAgainButtonContainer.style.height = "58px";
+
+    // ✅ keep your animation exactly the same
+    tryAgainButtonContainer.style.opacity = "0";
+    tryAgainButtonContainer.style.transform = "translateX(18px)";
+    tryAgainButtonContainer.style.transition = "opacity 0.5s ease, transform 0.5s ease, background-color 0.3s ease";
+
+    const tryAgainSymbol = document.createElement("img");
+    tryAgainSymbol.style.position = "absolute";
+    tryAgainSymbol.style.marginLeft = "86px";
+    tryAgainSymbol.style.marginTop = "16px";
+    tryAgainSymbol.src = "../assets/symbols/try-again-symbol.png";
+    tryAgainSymbol.width = 24;
+    tryAgainSymbol.height = 25;
+    tryAgainSymbol.style.pointerEvents = "none";
+
+    const tryAgainButton = document.createElement("button");
+    tryAgainButton.textContent = "Try again";
+    tryAgainButton.style.display = "block";
+    tryAgainButton.style.width = "100%";
+    tryAgainButton.style.height = "100%";
+    tryAgainButton.style.fontSize = "23px";
+    tryAgainButton.style.fontFamily = "'Roboto', sans-serif";
+    tryAgainButton.style.fontWeight = "500";
+    tryAgainButton.style.textAlign = "center";
+    tryAgainButton.style.color = "white";
+    tryAgainButton.style.background = "#171717";
+    tryAgainButton.style.border = "none";
+    tryAgainButton.style.borderRadius = "16px";
+    tryAgainButton.style.paddingLeft = "40px";
+    tryAgainButton.style.cursor = "pointer";
 
 
-initMain();
-setEmail().then(setPotentialAvatar);
+    tryAgainButtonContainer.append(tryAgainSymbol,tryAgainButton);
+    document.body.appendChild(tryAgainButtonContainer);
+
+    // ✅ Hover effect using events
+    tryAgainButton.addEventListener("mouseover", () => {
+        tryAgainButton.style.background = "#1C1C1C"; // hover color
+    });
+
+    tryAgainButton.addEventListener("mouseout", () => {
+        tryAgainButton.style.background = "#171717"; // back to normal
+    });
+
+    tryAgainButton.addEventListener("click",() => {
+        window.location.href = "../pages/index.html"; // better reset
+    });
+
+    // ✅ same animation delay
+    setTimeout(() => {
+        tryAgainButtonContainer.style.opacity = "1";
+        tryAgainButtonContainer.style.transform = "translateX(0)";
+    }, 2250);
+}
+async function checkAndSaveResults() {
+    if (email) {
+        await saveResults();
+    }
+}
+async function saveResults() {
+    try {
+        const response = await fetch("http://localhost:8080/save-results", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId, totalWords: totalTypedWords, correctWords }),
+        });
+
+        if (!response.ok) {
+            console.error("HTTP error", response.status);
+            return;
+        }
+
+        // ✅ Prevent page reload by safely handling JSON
+        const data = await response.json().catch(() => null);
+
+        if (data && !data.success) {
+            alert(data.errorMessage);
+        }
+    } catch (error) {
+        console.error("Fetch error:", error);
+    }
+}
+async function checkAndShowRecords() {
+    if (email) {
+        const record = await getCorrectWordsRecord();
+        setTimeout(function () {
+            if (correctWords > record) {
+                showTooltip("New record: "+correctWords+" WPM!","32px");
+            } else if (record > 0) {
+                showTooltip("Your record: "+record+" WPM","32px");
+            }
+
+        }, 4000);
+    }
+}
+async function getCorrectWordsRecord() {
+    try {
+        const response = await fetch("http://localhost:8080/get-correct-words-record", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId }),
+        });
+
+        if (!response.ok) {
+            console.error("HTTP error", response.status);
+            return null; // return something safe
+        }
+
+        const data = await response.json().catch(() => null);
+
+        if (data && data.success) {
+            return data.data; // ✅ return your record here
+        } else {
+            console.error(data?.errorMessage || "Unknown error");
+            return null;
+        }
+    } catch (error) {
+        console.error("Fetch error:", error);
+        return null;
+    }
+}
+
+
+await initMain();
+setEmail().then(async () => {
+    await setPotentialAvatar();
+    await setUserId();
+});
 setupMainListeners();
-
 
 

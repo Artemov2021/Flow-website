@@ -4,7 +4,6 @@ const dontHaveAccountButton = document.getElementById("auth-signup-navigation-te
 const loginEmailInput = document.getElementById("login-email-input");
 const forgotPasswordButton = document.getElementById("auth-password-forgot-password");
 const loginPageLoginButton = document.getElementById("auth-login-button");
-const loginWithGoogleButton = document.getElementById("auth-login-with-google-button");
 const loginEmailErrorLabel = document.getElementById("login-email-error-label");
 const loginPasswordErrorLabel = document.getElementById("login-password-error-label");
 
@@ -49,6 +48,10 @@ function setupLoginListeners() {
                 setLoginButtonDefaultStyle();
             }
         }
+    });
+
+    forgotPasswordButton.addEventListener("click", () => {
+        openLoginEmailVerificationWindow();
     });
 }
 async function checkAndLogin() {
@@ -138,8 +141,10 @@ async function login() {
     await setSessionEmail();
     window.location.href = '../pages/index.html';
 }
-async function setSessionEmail() {
-    const email = loginEmailInput.value.trim();
+async function setSessionEmail(email) {
+    if (!email) {
+        email = loginEmailInput.value.trim();
+    }
 
     try {
         const response = await fetch("http://localhost:8080/set-session-email", {
@@ -175,6 +180,8 @@ function setLoginButtonDefaultStyle() {
 function setLoginButtonLoadingStyle() {
     loginPageLoginButton.className = "auth-login-button-loading";
 }
-
+function openLoginEmailVerificationWindow() {
+    window.location.href = '../pages/login-email-verification.html';
+}
 
 initLogin();

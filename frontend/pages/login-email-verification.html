@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login Verification</title>
+    <link rel="stylesheet" href="../css/auth.css">
+</head>
+<body>
+    <h1 style="margin-top: 220px">Login verification </h1>
+    <h2 style="margin-top: 17px">Enter your email to receive a verification code</h2>
+
+    <div class="auth-email-group" style="margin-top: 60px; margin-left: 757px; width: 375px;">
+        <div class="auth-email-input-container">
+            <input class="auth-email-input" id="login-email-verification-input" placeholder="Enter your email">
+            <img src="../assets/symbols/email.png" alt="email input icon" class="auth-email-input-icon">
+        </div>
+        <p class="auth-error-label-invisible" id="login-email-verification-error-label"></p>
+    </div>
+
+    <button class="auth-login-verification-button" id="login-email-verification-button" style="margin-top: 30px; width: 371px">Next</button>
+
+    <script type="module" src="../js/login-email-verification.js"></script>
+</body>
+</html>

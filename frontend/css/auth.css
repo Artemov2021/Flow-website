@@ -143,6 +143,7 @@ h2 {
 .auth-login-button {
     width: 100%;
     height: 55px;
+    margin-bottom: 4px;
 
     background: #ffffff;
     color: #000000;
@@ -160,6 +161,7 @@ h2 {
 .auth-login-button-loading {
     width: 100%;
     height: 55px;
+    margin-bottom: 4px;
 
     background: #9C9C9C;
     color: #000000;
@@ -171,69 +173,6 @@ h2 {
 
     pointer-events: none;  /* disables mouse events */
     cursor: default;
-}
-.auth-login-line-group {
-    position: relative;
-    margin-top: 20px;
-    height: 24px; /* give enough height for text + line */
-}
-.auth-login-line-text {
-    position: absolute;
-    top: 0; /* top of container */
-    left: 50%;
-    transform: translateX(-50%);
-    margin: 0; /* remove default <p> margin */
-    color: #575757;
-    font-family: 'Roboto', sans-serif;
-    font-weight: 500;
-    font-size: 20px;
-    background-color: #0F0F0F;
-    padding: 0 10px;
-    line-height: 1; /* prevents extra vertical spacing */
-}
-.auth-login-line {
-    position: absolute;
-    top: 3px;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    border: none;
-    background-color: #575757;
-}
-.auth-login-with-google-group {
-    margin-top: 20px;
-
-    position: relative;
-    width: 100%;
-    height: 55px;
-}
-.auth-login-with-google-button {
-    width: 100%;
-    height: 100%;
-
-    background-color: transparent;
-    border: 1px solid #575757;
-    border-radius: 16px;
-
-    font-size: 18px;
-    color: #575757;
-    font-family: 'Roboto', sans-serif;
-    font-weight: 500;
-
-    padding-left: 36px;
-}
-.auth-login-with-google-button:hover {
-    cursor: pointer;
-}
-.auth-login-with-google-symbol {
-    width: 18px;
-    height: 18px;
-
-    position: absolute;
-    top: 18px;
-    left: 160px;
-
-    pointer-events: none;
 }
 .auth-page-navigation-text {
     display: block;          /* makes it a block-level element */
@@ -472,4 +411,37 @@ h2 {
 .auth-signup-verification-button:hover {
     background: #D4D4D4;
 }
+.auth-login-verification-button {
+    margin: 34px auto 0 761px;
+    width: 362px;
+    height: 55px;
 
+    background: #ffffff;
+    color: #000000;
+    font-size: 18px;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+    border-radius: 14px;
+    border: none;
+
+    cursor: pointer;
+}
+.auth-login-verification-button:hover {
+    background: #D4D4D4;
+}
+.auth-login-verification-button-loading {
+    margin: 34px auto 0 761px;
+    width: 362px;
+    height: 55px;
+
+    background: #9C9C9C;
+    color: #000000;
+    font-size: 18px;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+    border-radius: 14px;
+    border: none;
+
+    pointer-events: none;  /* disables mouse events */
+    cursor: default;
+}

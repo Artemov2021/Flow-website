@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login Verification</title>
+    <link rel="stylesheet" href="../css/auth.css">
+</head>
+<body>
+    <p class="signup-verification-h1">Login code</p>
+    <p class="signup-verification-h2" id="login-verification-h2">Enter the 4-digit code we sent to your email (email@gmail.com).</p>
+    <p class="signup-verification-h3">It will expire in 5 minutes.</p>
+
+    <div class="signup-verification-input-group" id="login-verification-input-group">
+        <input class="signup-verification-input-default" maxlength="1" autofocus>
+        <input class="signup-verification-input-default" maxlength="1">
+        <input class="signup-verification-input-default" maxlength="1">
+        <input class="signup-verification-input-default" maxlength="1">
+    </div>
+
+    <p class="signup-verification-error-label" id="login-verification-error-label"></p>
+    <button class="auth-signup-verification-button" id="auth-login-verification-button">Login</button>
+
+    <script type="module" src="../js/login-verification.js"></script>
+</body>
+</html>

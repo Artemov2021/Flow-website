@@ -1,36 +1,36 @@
-const signupVerificationH2 = document.getElementById("signup-verification-h2");
-const verificationSignupButton = document.getElementById("auth-signup-verification-button");
+const loginVerificationH2 = document.getElementById("login-verification-h2");
+const loginVerificationButton = document.getElementById("auth-login-verification-button");
 
-const inputsContainer = document.getElementById("signup-verification-input-group");
-const inputs = Array.from(inputsContainer.querySelectorAll("input"));
-const signupVerificationErrorLabel = document.getElementById("signup-verification-error-label");
+const loginVerificationInputsContainer = document.getElementById("login-verification-input-group");
+const loginVerificationInputs = Array.from(loginVerificationInputsContainer.querySelectorAll("input"));
+const loginVerificationErrorLabel = document.getElementById("login-verification-error-label");
 
-let email = "example@gmail.com";
+let loginVerificationEmail = "example@gmail.com";
 
-async function initSignupVerification() {
-    await setEmail();
-    setH2();
-    setupSignupVerificationListeners();
+async function initLoginVerification() {
+    await setLoginVerificationEmail();
+    setLoginVerificationH2();
+    setupLoginVerificationListeners();
 }
-async function setEmail() {
+async function setLoginVerificationEmail() {
     const res = await fetch("http://localhost:8080/get-session-email", {
-        credentials: "include"
-    });
+            credentials: "include"
+        });
     const data = await res.json();
-    email = data.data;
+    loginVerificationEmail = data.data;
 }
-function setH2() {
-    signupVerificationH2.textContent = `Enter the 4-digit code we sent to your email (${email}).`;
+function setLoginVerificationH2() {
+    loginVerificationH2.textContent = `Enter the 4-digit code we sent to your email (${loginVerificationEmail}).`;
 }
-function setupSignupVerificationListeners() {
-    // Sign up verification inputs
-    inputsContainer.addEventListener('input', (e) => {
+function setupLoginVerificationListeners() {
+    // Login verification inputs
+    loginVerificationInputsContainer.addEventListener('input', (e) => {
         const input = e.target;
         if (input.value === " ") {
             input.value = "";
         }
         if (input && input.tagName === 'INPUT' && input.value) {
-            const inputs = Array.from(inputsContainer.children);
+            const inputs = Array.from(loginVerificationInputsContainer.children);
             const index = inputs.indexOf(input);
             if (index >= 0 && index < inputs.length - 1) {
                 setTimeout(() => {
@@ -39,30 +39,29 @@ function setupSignupVerificationListeners() {
             }
         }
     });
-    inputsContainer.addEventListener('keydown', async (e) => {
+    loginVerificationInputsContainer.addEventListener('keydown', async (e) => {
         const input = e.target;
         if (input && e.key === 'Backspace' && !input.value) {
-            const inputs = Array.from(inputsContainer.children);
+            const inputs = Array.from(loginVerificationInputsContainer.children);
             const index = inputs.indexOf(input);
             if (index > 0) {
                 inputs[index - 1].focus(); // backspace stays instant
             }
         } else if (e.key === "Enter") {
-            await checkAndSignup();
+            await checkAndLogin();
         }
     });
 
-    // Signup button
-    verificationSignupButton.addEventListener("click",async () => {
-        await checkAndSignup();
+    // Login button
+    loginVerificationButton.addEventListener("click",async () => {
+        await checkAndLogin();
     });
 }
 
-async function checkAndSignup() {
+async function checkAndLogin() {
     try {
         if (await isUserInVerificationDB() && await isTypedCodeCorrect()) {
             setDefaultStyle();
-            await signUpUser();
             showMainWindow();
             await deleteFromVerificationDB();
         } else {
@@ -73,15 +72,15 @@ async function checkAndSignup() {
             alert("Error : " + error.message);
         }
     }
-
 }
+
 async function isUserInVerificationDB() {
     const response = await fetch("http://localhost:8080/is-user-in-verification-db", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({email: email}),
+        body: JSON.stringify({email: loginVerificationEmail}),
     });
 
     const data = await response.json();
@@ -90,14 +89,14 @@ async function isUserInVerificationDB() {
     return data.success && isUserInVerificationDB;
 }
 async function isTypedCodeCorrect() {
-    const typedCode = inputs.map(input => input.value).join("");
+    const typedCode = loginVerificationInputs.map(input => input.value).join("");
 
     const response = await fetch("http://localhost:8080/is-typed-code-correct", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({email,typedCode}),
+        body: JSON.stringify({email:loginVerificationEmail,typedCode:typedCode}),
     });
 
     const data = await response.json();
@@ -113,22 +112,7 @@ async function deleteFromVerificationDB() {
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({email: email}),
-    });
-
-    const data = await response.json();
-    if (!data.success) {
-        throw new Error(data.errorMessage);
-    }
-}
-async function signUpUser() {
-    const response = await fetch("http://localhost:8080/sign-up-user", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({email: email}),
-        credentials: "include"
+        body: JSON.stringify({email: loginVerificationEmail}),
     });
 
     const data = await response.json();
@@ -138,23 +122,23 @@ async function signUpUser() {
 }
 
 function showError() {
-    inputs.forEach((input) => {
+    loginVerificationInputs.forEach((input) => {
         // Example: set different background colors
         input.className = "signup-verification-input-error";
     });
 
-    signupVerificationErrorLabel.textContent = "Invalid code";
+    loginVerificationErrorLabel.textContent = "Invalid code";
 }
 function setDefaultStyle() {
-    inputs.forEach((input) => {
+    loginVerificationInputs.forEach((input) => {
         // Example: set different background colors
         input.className = "signup-verification-input-default";
     });
 
-    signupVerificationErrorLabel.textContent = "";
+    loginVerificationErrorLabel.textContent = "";
 }
 function showMainWindow() {
     window.location.href = '../pages/index.html';
 }
 
-await initSignupVerification();
+await initLoginVerification();

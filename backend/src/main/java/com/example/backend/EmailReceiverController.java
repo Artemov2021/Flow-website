@@ -8,6 +8,7 @@ import jakarta.mail.Transport;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,11 +18,13 @@ import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 import org.mindrot.jbcrypt.BCrypt;
 
 @RestController
 public class EmailReceiverController {
+    private final String FRONTEND_PORT = "3000";
     private final String DB_URL = "jdbc:sqlite:./data/database.db"; // Path where DB will be created
 
     @Scheduled(fixedRate = 30000) // every 30 seconds
@@ -30,26 +33,58 @@ public class EmailReceiverController {
 
         try (Connection conn = DriverManager.getConnection(DB_URL);
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            int rowsDeleted = ps.executeUpdate();
-            System.out.println("Deleted " + rowsDeleted + " expired verification codes.");
+            ps.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+
     @PostMapping("/send-signup-code")
-    @CrossOrigin(origins = "http://localhost:63343", allowCredentials = "true") // allow any origin
-    public ApiResponse sendSignupEmail(@RequestBody Request request,HttpSession session) {
+    @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
+    public ApiResponse sendSignupCode(@RequestBody Request request, HttpSession session) {
         String email = request.getEmail();
         String hashedPassword = BCrypt.hashpw(request.getPassword(), BCrypt.gensalt());
 
-        session.setAttribute("email",email);
-        session.setAttribute("signupPassword",hashedPassword);
+        session.setAttribute("email", email);
+        session.setAttribute("signupPassword", hashedPassword);
 
         try {
             if (!isUserInVerificationDB(email)) {
                 String generatedCode = addUserToVerificationDB(email);
-                sendUserVerificationCodeEmail(email,generatedCode);
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        sendUserVerificationCodeEmail(email,generatedCode);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            }
+            return new ApiResponse(true, email, null);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ApiResponse(false, email, e.getMessage());
+        }
+    }
+
+
+    @PostMapping("/send-login-code")
+    @CrossOrigin(origins = "http://localhost:"+ FRONTEND_PORT, allowCredentials = "true") // allow any origin
+    public ApiResponse sendLoginCode(@RequestBody Request request,HttpSession session) {
+        String email = request.getEmail();
+
+        session.setAttribute("email",email);
+
+        try {
+            if (!isUserInVerificationDB(email)) {
+                String generatedCode = addUserToVerificationDB(email);
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        sendUserVerificationCodeEmail(email,generatedCode);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
             }
             return new ApiResponse(true,email,null);
         } catch (Exception e) {
@@ -59,7 +94,7 @@ public class EmailReceiverController {
 
 
     @GetMapping("/get-session-email")
-    @CrossOrigin(origins = "http://localhost:63343", allowCredentials = "true") // allow any origin
+    @CrossOrigin(origins = "http://localhost:"+ FRONTEND_PORT, allowCredentials = "true") // allow any origin
     public ApiResponse getSessionEmail(HttpSession session) {
         try {
             String email = (String) session.getAttribute("email");
@@ -70,8 +105,34 @@ public class EmailReceiverController {
     }
 
 
+    @PostMapping("/get-session-user_id")
+    @CrossOrigin(origins = "http://localhost:"+ FRONTEND_PORT, allowCredentials = "true") // allow any origin
+    public ApiResponse getSessionUserId(@RequestBody Request request) {
+        String email = request.getEmail();
+
+        try {
+            int user_id = getSessionUserId(email);
+            return new ApiResponse(true,user_id,null);
+        } catch (Exception e) {
+            return new ApiResponse(false,null,e.getMessage());
+        }
+    }
+
+
+    @PostMapping("/delete-session-email")
+    @CrossOrigin(origins = "http://localhost:"+ FRONTEND_PORT, allowCredentials = "true") // allow any origin
+    public ApiResponse deleteSessionEmail(HttpSession session) {
+        try {
+            session.removeAttribute("email");
+            return new ApiResponse(true,true,null);
+        } catch (Exception e) {
+            return new ApiResponse(false,false,e.getMessage());
+        }
+    }
+
+
     @PostMapping("/set-session-email")
-    @CrossOrigin(origins = "http://localhost:63343", allowCredentials = "true") // allow any origin
+    @CrossOrigin(origins = "http://localhost:"+ FRONTEND_PORT, allowCredentials = "true") // allow any origin
     public ApiResponse setSessionEmail(@RequestBody Request request,HttpSession session) {
         String email = request.getEmail();
 
@@ -85,7 +146,7 @@ public class EmailReceiverController {
 
 
     @PostMapping("/is-user-in-verification-db")
-    @CrossOrigin(origins = "http://localhost:63343", allowCredentials = "true") // allow any origin
+    @CrossOrigin(origins = "http://localhost:"+ FRONTEND_PORT, allowCredentials = "true") // allow any origin
     public ApiResponse isUserInVerificationDB(@RequestBody Request request) {
         String email = request.getEmail();
 
@@ -102,7 +163,7 @@ public class EmailReceiverController {
 
 
     @PostMapping("/is-typed-code-correct")
-    @CrossOrigin(origins = "http://localhost:63343", allowCredentials = "true") // allow any origin
+    @CrossOrigin(origins = "http://localhost:"+ FRONTEND_PORT, allowCredentials = "true") // allow any origin
     public ApiResponse isTypedCodeCorrect(@RequestBody Request request) {
         String email = request.getEmail();
         String plainTypedCode = request.getTypedCode();
@@ -117,7 +178,7 @@ public class EmailReceiverController {
 
 
     @PostMapping("/delete-user-from-verification-db")
-    @CrossOrigin(origins = "http://localhost:63343", allowCredentials = "true") // allow any origin
+    @CrossOrigin(origins = "http://localhost:"+ FRONTEND_PORT, allowCredentials = "true") // allow any origin
     public ApiResponse deleteUserFromVerificationDB(@RequestBody Request request) {
         String email = request.getEmail();
 
@@ -131,7 +192,7 @@ public class EmailReceiverController {
 
 
     @PostMapping("/sign-up-user")
-    @CrossOrigin(origins = "http://localhost:63343", allowCredentials = "true") // allow any origin
+    @CrossOrigin(origins = "http://localhost:"+ FRONTEND_PORT, allowCredentials = "true") // allow any origin
     public ApiResponse signUpUser(@RequestBody Request request,HttpSession session) {
         String email = request.getEmail();
         String password = (String) session.getAttribute("signupPassword");
@@ -146,7 +207,7 @@ public class EmailReceiverController {
 
 
     @PostMapping("/is-user-in-users-db")
-    @CrossOrigin(origins = "http://localhost:63343", allowCredentials = "true") // allow any origin
+    @CrossOrigin(origins = "http://localhost:"+ FRONTEND_PORT, allowCredentials = "true") // allow any origin
     public ApiResponse isUserInUsersDB(@RequestBody Request request) {
         String email = request.getEmail();
 
@@ -160,7 +221,7 @@ public class EmailReceiverController {
 
 
     @PostMapping("/is-plain-password-correct")
-    @CrossOrigin(origins = "http://localhost:63343", allowCredentials = "true") // allow any origin
+    @CrossOrigin(origins = "http://localhost:"+ FRONTEND_PORT, allowCredentials = "true") // allow any origin
     public ApiResponse isPlainPasswordCorrect(@RequestBody Request request) {
         String email = request.getEmail();
         String plainPassword = request.getPassword();
@@ -175,6 +236,42 @@ public class EmailReceiverController {
             return new ApiResponse(false,email,e.getMessage());
         }
     }
+
+
+    @PostMapping("/save-results")
+    @CrossOrigin(origins = "http://localhost:" + FRONTEND_PORT, allowCredentials = "true")
+    public ApiResponse saveResults(@RequestBody Request request) {
+        int userId = request.getUserId();
+        int totalWords = request.getTotalWords();
+        int correctWords = request.getCorrectWords();
+
+        try {
+            System.out.println("total words: "+totalWords);
+            saveResultsToDB(userId,totalWords,correctWords);
+            return new ApiResponse(true, true, null); // ✅ forces JSON
+        } catch (Exception e) {
+            return new ApiResponse(false, null, e.getMessage());
+        }
+    }
+
+
+    @PostMapping("/get-correct-words-record")
+    @CrossOrigin(origins = "http://localhost:"+ FRONTEND_PORT, allowCredentials = "true") // allow any origin
+    public ApiResponse getCorrectWordsRecord(@RequestBody Request request) {
+        int userId = request.getUserId();
+
+        try {
+            int record = getCorrectWordsRecordFromDB(userId);
+            System.out.println("record: "+record);
+            return new ApiResponse(true,record,null);
+        } catch (Exception e) {
+            return new ApiResponse(false,null,e.getMessage());
+        }
+    }
+
+
+
+
 
 
     private boolean isUserInVerificationDB(String email) throws Exception {
@@ -325,6 +422,75 @@ public class EmailReceiverController {
             return BCrypt.checkpw(plainPassword,hashedPasswordFromDB);
         }
     }
+    private int getSessionUserId(String email) throws SQLException {
+        String statement = "SELECT user_id FROM users WHERE email = ?";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement stmt = conn.prepareStatement(statement)) {
+            stmt.setString(1,email);
+            ResultSet rs = stmt.executeQuery();
+            int user_id = rs.getInt("user_id");
+            return user_id;
+        }
+    }
+    private void saveResultsToDB(int userId, int totalWords, int correctWords) {
+        String sql = "INSERT INTO sessions (user_id, session, total_words, correct_words) VALUES (?, ?, ?, ?)";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            int lastSession;
+            try {
+                lastSession = getLastSession(userId); // ✅ get last safely
+            } catch (Exception e) {
+                lastSession = 0; // ✅ if no session exists, start from 0
+            }
+
+            ps.setInt(1, userId);
+            ps.setInt(2, lastSession + 1); // ✅ safe now
+            ps.setInt(3, totalWords);
+            ps.setInt(4, correctWords);
+
+            ps.executeUpdate();
+            System.out.println("✅ Results saved in DB!");
+
+        } catch (Exception e) {
+            System.out.println("❌ ERROR saving results: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    private int getLastSession(int userId) throws SQLException {
+        String statement = "SELECT session FROM sessions WHERE user_id = ? ORDER BY session DESC LIMIT 1";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement stmt = conn.prepareStatement(statement)) {
+
+            stmt.setInt(1,userId);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt("session"); // latest session
+            } else {
+                return 0; // no sessions yet
+            }
+        }
+    }
+    private int getCorrectWordsRecordFromDB(int userId) throws SQLException {
+        String statement = "SELECT MAX(correct_words) AS record FROM sessions WHERE user_id = ?";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement stmt = conn.prepareStatement(statement)) {
+
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt("record"); // ✅ highest correct words
+            } else {
+                return 0; // no sessions yet
+            }
+        }
+    }
 
 }
 
@@ -332,6 +498,9 @@ class Request {
     private String email;
     private String password;
     private String typedCode;
+    private int userId;
+    private int totalWords;
+    private int correctWords;
 
     public void setEmail(String email) {
         this.email = email;
@@ -342,6 +511,15 @@ class Request {
     public void setTypedCode(String typedCode) {
         this.typedCode = typedCode;
     }
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
+    public void setTotalWords(int totalWords) {
+        this.totalWords = totalWords;
+    }
+    public void setCorrectWords(int correctWords) {
+        this.correctWords = correctWords;
+    }
 
     public String getEmail() {
         return this.email;
@@ -351,6 +529,15 @@ class Request {
     }
     public String getTypedCode() {
         return this.typedCode;
+    }
+    public int getUserId() {
+        return this.userId;
+    }
+    public int getTotalWords() {
+        return this.totalWords;
+    }
+    public int getCorrectWords() {
+        return this.correctWords;
     }
 }
 class ApiResponse {
