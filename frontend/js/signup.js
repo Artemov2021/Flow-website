@@ -1,3 +1,5 @@
+import { API_BASE_URL } from "./config.js";
+
 const signupEmailInput = document.getElementById("signup-email-input");
 const toggleSignupPasswordButton = document.getElementById("signup-password-input-toggle-button");
 const signupPasswordInput = document.getElementById("signup-password-input");
@@ -7,12 +9,16 @@ const privacyPolicyButton = document.getElementById("privacy-policy-button");
 const termsOfServiceButton = document.getElementById("terms-of-service-button");
 const signupButton = document.getElementById("auth-signup-button");
 const haveAlreadyAccount = document.getElementById("auth-login-navigation-text");
-
+const flowTitle = document.getElementById("flow-title");
 
 function initSignup() {
     setupSignupListeners();
 }
 function setupSignupListeners() {
+    flowTitle.addEventListener("click",() => {
+        window.location.href = "../pages/index.html";
+    });
+
     // Toggle password
     toggleSignupPasswordButton.addEventListener("click", () => {
         const isPassword = signupPasswordInput.type === "password";
@@ -29,24 +35,13 @@ function setupSignupListeners() {
         window.location.href = '../pages/login.html';
     })
 
-    // Sign up button listener
-    signupButton?.addEventListener("click",async (e) => {
-        e.preventDefault(); // must prevent default
-        try {
-            setSignupButtonLoadingStyle();
-            await checkAndSendCode();
-            setSignupButtonDefaultStyle();
-        } catch (error) {
-            alert("Error: "+error.message);
-            setSignupButtonDefaultStyle();
-        }
+    // Sign up listeners
+    signupButton.addEventListener("click",async () => {
+        await signUp();
     });
-
-    // Password field enter listener
     signupPasswordInput.addEventListener("keydown", async (e) => {
         if (e.key === "Enter") {
-            e.preventDefault(); // optional: prevent form submission if inside a form
-            await checkAndSendCode();
+            await signUp();
         }
     });
 
@@ -56,35 +51,26 @@ function setupSignupListeners() {
     termsOfServiceButton.addEventListener("click",() => {
         showTermsOfServiceWindow();
     });
-
 }
 
-function setSignupButtonLoadingStyle() {
-    signupButton.className = "auth-signup-button-loading";
-}
-function setSignupButtonDefaultStyle() {
-    signupButton.className = "auth-signup-button";
-}
-async function checkAndSendCode() {
-    setEmailDefaultStyle();
-    setPasswordDefaultStyle();
+async function signUp() {
+    try {
+        setSignupButtonLoadingStyle();
+        setFieldsDefaultStyle();
 
-    if (isEmailValid() && isPasswordValid() && !await isUserInUsersDB()) {
-        await sendSignupCode();
-        await setSessionEmail();
-        return;
-    }
+        if (await isSignupInfoValid()) {
+            await sendSignupCode();
+            await setSessionEmail();
+            await setSessionHashedPassword();
+            showSignupVerificationPage();
+        } else {
+            await handleInvalidInfo();
+        }
 
-    if (!isEmailValid()) {
-        setEmailErrorStyle("Please enter a valid email address");
-    }
-
-    if (!isPasswordValid()) {
-        setPasswordErrorStyle("Password must be 12+ length, letters & numbers");
-    }
-
-    if (await isUserInUsersDB()) {
-        setEmailErrorStyle("Email address is already taken");
+        setSignupButtonDefaultStyle();
+    } catch (error) {
+        alert("Error: "+error.message);
+        setSignupButtonDefaultStyle();
     }
 }
 function isEmailValid() {
@@ -102,136 +88,80 @@ function isPasswordValid() {
 async function isUserInUsersDB() {
     const email = signupEmailInput.value.trim();
 
-    try {
-        const response = await fetch("http://localhost:8080/is-user-in-users-db", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({email: email}),
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            const isUserInUsersDB = data.data;
-            return isUserInUsersDB;
-        } else {
-            alert(data.errorMessage);
-            return false;
+    const response = await fetch(`${API_BASE_URL}/user/availability?email=${encodeURIComponent(email)}`, {
+            method: "GET",
+            credentials: "include",
         }
-    } catch (error) {
-        alert(error.message);
-        return false;
+    );
+
+    const data = await response.json();
+
+    if (data.success) {
+        return data.result;
+    } else {
+        throw new Error(data.error);
     }
 }
-function setEmailErrorStyle(error) {
-    // set error label
-    authEmailErrorLabel.className = "auth-error-label-visible";
-    authEmailErrorLabel.textContent = error;
-
-    // set error input style
-    signupEmailInput.className = "auth-error-input";
+async function isSignupInfoValid(){
+    return isEmailValid() && isPasswordValid() && !await isUserInUsersDB();
 }
-function setEmailDefaultStyle() {
-    // set error label
-    authEmailErrorLabel.className = "auth-error-label-invisible";
-    authEmailErrorLabel.textContent = "";
-
-    // set error input style
-    signupEmailInput.className = "auth-email-input";
-}
-function setPasswordErrorStyle(error) {
-    // set error label
-    authPasswordErrorLabel.className = "auth-error-label-visible";
-    authPasswordErrorLabel.textContent = error;
-
-    // set error input style
-    signupPasswordInput.className = "auth-error-input";
-}
-function setPasswordDefaultStyle() {
-    // set error label
-    authPasswordErrorLabel.className = "auth-error-label-invisible";
-    authPasswordErrorLabel.textContent = "";
-
-    // set error input style
-    signupPasswordInput.className = "auth-password-input";
-}
-
 async function sendSignupCode() {
     const email = signupEmailInput.value.trim();
-    const password = signupPasswordInput.value.trim();
 
-    try {
-        const response = await fetch("http://localhost:8080/send-signup-code", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({email: email,password: password}),
-            credentials: "include"
-        });
+    const response = await fetch(`${API_BASE_URL}/auth/signup/request-code`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({email}),
+    });
 
-        if (!response.ok) {
-            const text = await response.text();
-            console.error("Backend returned error:", response.status, text);
-            alert("Backend error: " + response.status);
-            return;
-        }
+    const data = await response.json();
 
-        const data = await response.json();
-
-        if (data.success) {
-            showSignupVerificationPage();
-        } else {
-            alert("Failed to send verification email.");
-        }
-    } catch (error) {
-        if (error instanceof Error) {
-            console.error("Error sending signup code:", error.message);
-            console.error(error.stack);
-            alert("An error occurred: " + error.message);
-            setSignupButtonDefaultStyle();
-        } else {
-            console.error("Unknown error:", error);
-            alert("An unknown error occurred");
-        }
+    if (!data.success) {
+        throw new Error(data.error);
     }
 }
 async function setSessionEmail() {
     const email = signupEmailInput.value.trim();
 
-    try {
-        const response = await fetch("http://localhost:8080/set-session-email", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({email: email}),
-            credentials: "include"
-        });
+    const response = await fetch(`${API_BASE_URL}/session/email`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({email}),
+        credentials: "include"
+    });
 
-        const data = await response.json();
+    const data = await response.json();
 
-        if (!data.success) {
-            alert("Failed to set session email");
-            setSignupButtonDefaultStyle();
-        }
-    } catch (error) {
-        if (error instanceof Error) {
-            console.error("Error sending signup code:", error.message);
-            console.error(error.stack);
-            alert("An error occurred: " + error.message);
-            setSignupButtonDefaultStyle();
-        } else {
-            console.error("Unknown error:", error);
-            alert("An unknown error occurred");
-        }
+    if (!data.success) {
+        throw new Error(data.error);
+    }
+}
+async function setSessionHashedPassword() {
+    const password = signupPasswordInput.value.trim();
+
+    const response = await fetch(`${API_BASE_URL}/session/password`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({password}),
+        credentials: "include"
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+        throw new Error(data.error);
     }
 }
 function showSignupVerificationPage() {
     window.location.href = '../pages/signup-verification.html';
 }
+
 
 function getBlackBackground() {
     const overlay = document.createElement("div");
@@ -387,6 +317,63 @@ function showOverlayWindow(title,sections) {
     exit.addEventListener("click", (e) => {
         document.body.removeChild(overlay);
     });
+}
+
+
+function setSignupButtonLoadingStyle() {
+    signupButton.className = "auth-signup-button-loading";
+}
+function setSignupButtonDefaultStyle() {
+    signupButton.className = "auth-signup-button";
+}
+function setFieldsDefaultStyle() {
+    setEmailDefaultStyle();
+    setPasswordDefaultStyle();
+}
+async function handleInvalidInfo() {
+    if (!isEmailValid()) {
+        setEmailErrorStyle("Please enter a valid email address");
+    }
+
+    if (!isPasswordValid()) {
+        setPasswordErrorStyle("Password must be 12+ length, letters & numbers");
+    }
+
+    if (await isUserInUsersDB()) {
+        setEmailErrorStyle("Email address is already taken");
+    }
+}
+function setEmailErrorStyle(error) {
+    // set error label
+    authEmailErrorLabel.className = "auth-error-label-visible";
+    authEmailErrorLabel.textContent = error;
+
+    // set error input style
+    signupEmailInput.className = "auth-error-input";
+}
+function setEmailDefaultStyle() {
+    // set error label
+    authEmailErrorLabel.className = "auth-error-label-invisible";
+    authEmailErrorLabel.textContent = "";
+
+    // set error input style
+    signupEmailInput.className = "auth-email-input";
+}
+function setPasswordErrorStyle(error) {
+    // set error label
+    authPasswordErrorLabel.className = "auth-error-label-visible";
+    authPasswordErrorLabel.textContent = error;
+
+    // set error input style
+    signupPasswordInput.className = "auth-error-input";
+}
+function setPasswordDefaultStyle() {
+    // set error label
+    authPasswordErrorLabel.className = "auth-error-label-invisible";
+    authPasswordErrorLabel.textContent = "";
+
+    // set error input style
+    signupPasswordInput.className = "auth-password-input";
 }
 
 initSignup();

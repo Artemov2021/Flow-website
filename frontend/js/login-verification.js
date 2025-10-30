@@ -1,9 +1,12 @@
+import {API_BASE_URL} from "./config.js";
+import {deleteFromVerificationDB} from "./common/verification.js";
+
 const loginVerificationH2 = document.getElementById("login-verification-h2");
 const loginVerificationButton = document.getElementById("auth-login-verification-button");
-
 const loginVerificationInputsContainer = document.getElementById("login-verification-input-group");
 const loginVerificationInputs = Array.from(loginVerificationInputsContainer.querySelectorAll("input"));
 const loginVerificationErrorLabel = document.getElementById("login-verification-error-label");
+const flowTitle = document.getElementById("flow-title");
 
 let loginVerificationEmail = "example@gmail.com";
 
@@ -13,16 +16,30 @@ async function initLoginVerification() {
     setupLoginVerificationListeners();
 }
 async function setLoginVerificationEmail() {
-    const res = await fetch("http://localhost:8080/get-session-email", {
+    try {
+        const res = await fetch(`${API_BASE_URL}/session/email`, {
             credentials: "include"
         });
-    const data = await res.json();
-    loginVerificationEmail = data.data;
+
+        const data = await res.json();
+
+        if (!data.success) {
+            alert(data.error);
+        } else {
+            loginVerificationEmail = data.result;
+        }
+    } catch (error) {
+        alert(error.message);
+    }
 }
 function setLoginVerificationH2() {
     loginVerificationH2.textContent = `Enter the 4-digit code we sent to your email (${loginVerificationEmail}).`;
 }
 function setupLoginVerificationListeners() {
+    flowTitle.addEventListener("click",() => {
+        window.location.href = "../pages/index.html";
+    });
+
     // Login verification inputs
     loginVerificationInputsContainer.addEventListener('input', (e) => {
         const input = e.target;
@@ -62,8 +79,10 @@ async function checkAndLogin() {
     try {
         if (await isUserInVerificationDB() && await isTypedCodeCorrect()) {
             setDefaultStyle();
-            showMainWindow();
+            await setSessionUserId();
             await deleteFromVerificationDB();
+            await deleteSessionEmail();
+            showMainWindow();
         } else {
             showError();
         }
@@ -75,49 +94,70 @@ async function checkAndLogin() {
 }
 
 async function isUserInVerificationDB() {
-    const response = await fetch("http://localhost:8080/is-user-in-verification-db", {
-        method: "POST",
+    const response = await fetch(`${API_BASE_URL}/auth/verification/status`, {
+        method: "GET",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({email: loginVerificationEmail}),
+        credentials: "include",
     });
 
     const data = await response.json();
-    const isUserInVerificationDB = data.data;
 
-    return data.success && isUserInVerificationDB;
+    if (!data.success) {
+        throw new Error(data.error);
+    }
+
+    return data.result;
 }
 async function isTypedCodeCorrect() {
     const typedCode = loginVerificationInputs.map(input => input.value).join("");
 
-    const response = await fetch("http://localhost:8080/is-typed-code-correct", {
+    const response = await fetch(`${API_BASE_URL}/auth/verification/verify`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({email:loginVerificationEmail,typedCode:typedCode}),
+        body: JSON.stringify({typedCode}),
+        credentials: "include"
     });
 
     const data = await response.json();
-    const isTypedCodeCorrect = data.data;
 
-    console.log(data.success && isTypedCodeCorrect);
-
-    return data.success && isTypedCodeCorrect;
-}
-async function deleteFromVerificationDB() {
-    const response = await fetch("http://localhost:8080/delete-user-from-verification-db", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({email: loginVerificationEmail}),
-    });
-
-    const data = await response.json();
     if (!data.success) {
-        throw new Error(data.errorMessage);
+        throw new Error(data.error);
+    } else {
+        return data.result;
+    }
+}
+async function setSessionUserId() {
+    const response = await fetch(`${API_BASE_URL}/session/user-id`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+        throw new Error(data.error);
+    }
+}
+async function deleteSessionEmail() {
+    const response = await fetch(`${API_BASE_URL}/session/email`, {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+        throw new Error(data.error);
     }
 }
 

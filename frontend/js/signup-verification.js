@@ -1,9 +1,12 @@
+import { API_BASE_URL } from "./config.js";
+import {deleteFromVerificationDB} from "./common/verification.js";
+
 const signupVerificationH2 = document.getElementById("signup-verification-h2");
 const verificationSignupButton = document.getElementById("auth-signup-verification-button");
-
 const inputsContainer = document.getElementById("signup-verification-input-group");
 const inputs = Array.from(inputsContainer.querySelectorAll("input"));
 const signupVerificationErrorLabel = document.getElementById("signup-verification-error-label");
+const flowTitle = document.getElementById("flow-title");
 
 let email = "example@gmail.com";
 
@@ -13,16 +16,31 @@ async function initSignupVerification() {
     setupSignupVerificationListeners();
 }
 async function setEmail() {
-    const res = await fetch("http://localhost:8080/get-session-email", {
-        credentials: "include"
-    });
-    const data = await res.json();
-    email = data.data;
+    try {
+        const res = await fetch(`${API_BASE_URL}/session/email`, {
+            method: "GET",
+            credentials: "include"
+        });
+
+        const data = await res.json();
+
+        if (!data.success) {
+            alert(data.error);
+        } else {
+            email = data.result;
+        }
+    } catch (error) {
+        alert(error.message);
+    }
 }
 function setH2() {
     signupVerificationH2.textContent = `Enter the 4-digit code we sent to your email (${email}).`;
 }
 function setupSignupVerificationListeners() {
+    flowTitle.addEventListener("click",() => {
+        window.location.href = "../pages/index.html";
+    });
+
     // Sign up verification inputs
     inputsContainer.addEventListener('input', (e) => {
         const input = e.target;
@@ -48,102 +66,147 @@ function setupSignupVerificationListeners() {
                 inputs[index - 1].focus(); // backspace stays instant
             }
         } else if (e.key === "Enter") {
-            await checkAndSignup();
+            await signUp();
         }
     });
 
-    // Signup button
+    // Signup
     verificationSignupButton.addEventListener("click",async () => {
-        await checkAndSignup();
+        await signUp();
     });
 }
 
-async function checkAndSignup() {
+async function signUp() {
     try {
-        if (await isUserInVerificationDB() && await isTypedCodeCorrect()) {
-            setDefaultStyle();
+        const isUserInDB = await isUserInVerificationDB();
+        const isTypedCodeCorrect = await isTypedVerificationCodeCorrect();
+
+        setDefaultStyle();
+
+        if (isUserInDB && isTypedCodeCorrect) {
             await signUpUser();
-            showMainWindow();
+            await setSessionUserId();
             await deleteFromVerificationDB();
+            await deleteSessionEmail();
+            await deleteSessionPassword();
+            showMainWindow();
+        } else if (!isUserInDB) {
+            showError("Failed to find the user");
         } else {
-            showError();
+            showError("Invalid code");
         }
     } catch (error) {
         if (error instanceof Error) {
-            alert("Error : " + error.message);
+            showError(error.message);
         }
     }
-
 }
 async function isUserInVerificationDB() {
-    const response = await fetch("http://localhost:8080/is-user-in-verification-db", {
-        method: "POST",
+    const response = await fetch(`${API_BASE_URL}/auth/verification/status`, {
+        method: "GET",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({email: email}),
+        credentials: "include",
     });
 
     const data = await response.json();
-    const isUserInVerificationDB = data.data;
 
-    return data.success && isUserInVerificationDB;
-}
-async function isTypedCodeCorrect() {
-    const typedCode = inputs.map(input => input.value).join("");
-
-    const response = await fetch("http://localhost:8080/is-typed-code-correct", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({email,typedCode}),
-    });
-
-    const data = await response.json();
-    const isTypedCodeCorrect = data.data;
-
-    console.log(data.success && isTypedCodeCorrect);
-
-    return data.success && isTypedCodeCorrect;
-}
-async function deleteFromVerificationDB() {
-    const response = await fetch("http://localhost:8080/delete-user-from-verification-db", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({email: email}),
-    });
-
-    const data = await response.json();
     if (!data.success) {
-        throw new Error(data.errorMessage);
+        throw new Error(data.error);
+    } else {
+        return data.result;
     }
 }
-async function signUpUser() {
-    const response = await fetch("http://localhost:8080/sign-up-user", {
+async function isTypedVerificationCodeCorrect() {
+    const typedCode = inputs.map(input => input.value).join("");
+
+    const response = await fetch(`${API_BASE_URL}/auth/verification/verify`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({email: email}),
+        body: JSON.stringify({typedCode}),
         credentials: "include"
     });
 
     const data = await response.json();
+
     if (!data.success) {
-        throw new Error(data.errorMessage);
+        throw new Error(data.error);
+    } else {
+        return data.result;
+    }
+}
+async function signUpUser() {
+    const response = await fetch(`${API_BASE_URL}/auth/signup/complete`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include"
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+        throw new Error(data.error);
     }
 }
 
-function showError() {
+async function deleteSessionEmail() {
+    const response = await fetch(`${API_BASE_URL}/session/email`, {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+        throw new Error(data.error);
+    }
+}
+async function deleteSessionPassword() {
+    const response = await fetch(`${API_BASE_URL}/session/password`, {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+        throw new Error(data.error);
+    }
+}
+async function setSessionUserId() {
+    const response = await fetch(`${API_BASE_URL}/session/user-id`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+        throw new Error(data.error);
+    }
+}
+
+function showError(text) {
     inputs.forEach((input) => {
         // Example: set different background colors
         input.className = "signup-verification-input-error";
     });
 
-    signupVerificationErrorLabel.textContent = "Invalid code";
+    signupVerificationErrorLabel.textContent = text;
 }
 function setDefaultStyle() {
     inputs.forEach((input) => {

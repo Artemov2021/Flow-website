@@ -1,0 +1,195 @@
+body {
+    background-color: #0F0F0F;
+    margin: 0;
+    padding-top: 65px; /* ✅ Move page content down properly */
+    position: relative;
+}
+
+h1 {
+    margin: 0 auto 0 auto; /* ✅ Remove margin to prevent layout shifting */
+    text-align: center;
+    color: white;
+    font-size: 42px;
+    font-family: 'Roboto', sans-serif;
+    font-weight: bold;
+    width: fit-content;
+
+    opacity: 0;
+    transform: translateX(18px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.main-avatar {
+    position: absolute;
+    top: 20px;   /* ✅ Now really 20px from the top */
+    right: 33px;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.stats-elements {
+    position: relative;
+    margin: 100px auto;
+    width: fit-content;
+
+    display: flex;           /* Align items horizontally */
+    align-items: stretch; /* Keep them aligned at the top */
+    gap: 18px;                  /* 10px space between chart and blocks */
+}
+
+.stats-chart {
+    background-color: #121212;
+    border-radius: 24px;
+
+    opacity: 0;
+    transform: translateX(35px);
+    transition: opacity 0.5s ease, transform 0.75s ease;
+}
+.stats-chart-title {
+    margin-top: 40px;
+    margin-bottom: 0;
+    margin-left: 65px;
+
+    font-size: 22px;
+    color: white;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+}
+.y-label {
+    position: absolute;
+    left: 12px;         /* Position left */
+    top: 50%;          /* Vertically center */
+    transform: translateY(-50%) rotate(-90deg); /* Rotate text */
+    color: #8D8D8D;
+    font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+}
+.x-label {
+    width: fit-content;          /* only as wide as the text */
+    margin: 0 auto 25px auto;           /* centers it horizontally */
+    color: #8D8D8D;
+    font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+}
+.chart-area {
+    margin: 0 60px 0 65px;
+    width: 650px;
+    height: 350px;
+    border-radius: 20px;
+    padding: 20px 20px 0 20px;
+    position: relative;
+}
+.chart-line {
+    position: absolute;
+    left: 103px;      /* aligns with your chart grid */
+    top: 100px;
+    width: calc(100% - 55px);
+    height: 220px;
+    overflow: visible;
+    pointer-events: none;
+}
+.chart-line polyline {
+    fill: none;
+    stroke: #78A9FF;
+    stroke-width: 2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+}
+.y-numbers {
+    position: absolute;
+    left: 0;
+    top: 28px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 227px;
+    color: #8D8D8D;
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+}
+.chart-grid {
+    position: absolute;
+    left: 35px;
+    top: 30px;
+    right: 20px;
+    height: 220px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.grid-line {
+    width: 100%;
+    height: 1px;
+    background-color: #272727;
+}
+.y-axis {
+    position: absolute;
+    left: 35px;
+    top: 30px;
+    bottom: 50px;
+    width: 2px;
+    background-color: #3A3A3A;
+}
+.x-axis {
+    position: absolute;
+    left: 35px;
+    right: 20px;
+    bottom: 50px;
+    height: 2px;
+    background-color: #3A3A3A;
+}
+.x-numbers {
+    position: absolute;
+    bottom: 20px;
+    left: 38px;
+    right: 20px;
+    display: flex;
+    justify-content: space-between;
+    color: #8D8D8D;
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+}
+
+.stats-info {
+    display: flex;
+    flex-direction: column;     /* Stack blocks vertically */
+    gap: 10px;                   /* Space between blocks */
+    justify-content: space-between; /* ✅ Even spacing vertically */
+
+}
+.stats-info-block {
+    width: 260px;
+    background-color: #121212;
+    border-radius: 24px;
+
+    opacity: 0;
+    transform: translateX(30px);
+    transition: opacity 0.5s ease, transform 0.75s ease;
+}
+.stats-info-block-title {
+    margin: 28px 0 0 35px;
+    width: fit-content;
+
+    font-size: 22px;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+    background: linear-gradient(90deg, #727272 0%, #AFAFAF 100%);
+    -webkit-background-clip: text; /* Needed for Chrome/Safari */
+    background-clip: text;
+    color: transparent;            /* Makes gradient visible */
+}
+.stats-info-block-value {
+    margin: 18px 0 32px 35px;
+    width: fit-content;
+
+    font-size: 35px;
+    color: white;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+}
+
+

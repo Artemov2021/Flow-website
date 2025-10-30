@@ -1,3 +1,6 @@
+import { showMenu, hideMenu, isMenuOpened } from "./menu.js";
+import { API_BASE_URL } from "./config.js";
+
 const input = document.getElementById("textInput");
 const overlayText = document.getElementById("overlayText");
 const timer = document.getElementById("timerText");
@@ -6,17 +9,16 @@ const loginButton = document.getElementById("loginButton");
 const userSection = document.getElementById("user-section");
 const textContainer = document.getElementById("text-container");
 const textGradientCircle = document.getElementById("text-gradient-circle");
+const flowTitle = document.getElementById("flow-title");
 
 // typed (white correct and red incorrect chars) and untyped (gradient) texts
 let userId = null;
-let email = null;
 let texts = [];
 let currentCaretPosition = 0;
 let isTimerRunning = false;
 let isCurrentWordCorrect = true;
 let tooltipBackground = null;
-let isMenuOpened = false;
-let totalSeconds = 3;
+let totalSeconds = 5;
 
 let correctWords = 0;
 let totalTypedWords = 0;
@@ -30,32 +32,24 @@ async function initMain() {
 
     input.setSelectionRange(0, 0);
 }
-async function setEmail() {
-    const res = await fetch("http://localhost:8080/get-session-email", {
+async function setUserId() {
+    const response = await fetch(`${API_BASE_URL}/session/user-id`, {
+        method: "GET",
         credentials: "include"
     });
-    const data = await res.json();
-    email = data.data;
-}
-async function setUserId() {
-    const response = await fetch("http://localhost:8080/get-session-user_id", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({email}),
-    });
+
     const data = await response.json();
 
-    if (data.success) {
-        userId = data.data;
-    } else {
-        alert("error: "+data.errorMessage);
+    if (!data.success) {
+        throw new Error(data.error);
     }
+
+    userId = data.result;
+    console.log("User session ID: ", data.result);
 }
 async function setPotentialAvatar() {
     try {
-        if (isThereUserEmail() && await isEmailInUsersDB()) {
+        if (userId) {
             await setUserAvatar();
         }
     } catch (error) {
@@ -63,6 +57,10 @@ async function setPotentialAvatar() {
     }
 }
 function setupMainListeners() {
+    flowTitle.addEventListener("click",() => {
+        window.location.href = "../pages/index.html";
+    });
+
     // Stop caret from moving on click
     input.addEventListener("mousedown", (e) => {
         e.preventDefault(); // block default caret reposition
@@ -75,6 +73,13 @@ function setupMainListeners() {
 
     // Handle keys
     input.addEventListener("keydown", (e) => {
+        // Prevent deletion keys and up,down,right,left keys
+        const blockedKeys = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End"];
+        if (blockedKeys.indexOf(e.key) !== -1) {
+            e.preventDefault();
+            return;
+        }
+
         // Allow browser shortcuts
         if (e.ctrlKey || e.metaKey || e.altKey) {
             return; // do not block Ctrl+R, Ctrl+C, etc.
@@ -122,13 +127,6 @@ function setupMainListeners() {
 
             e.preventDefault();
         }
-
-        // Prevent deletion keys and up,down,right,left keys
-        const blockedKeys = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End"];
-        if (blockedKeys.indexOf(e.key) !== -1) {
-            e.preventDefault();
-            return;
-        }
     });
 
     // Remain scrolled position after being focused away
@@ -142,7 +140,7 @@ function setupMainListeners() {
         });
     });
 
-    if (!isThereUserEmail()) {
+    if (!userId) {
         // Load Log In page, when login button clicked
         loginButton.addEventListener('click', () => {
             window.location.href = '../pages/login.html';
@@ -171,43 +169,14 @@ async function setUserAvatar() {
         if (!isMenuOpened) {
             e.stopPropagation();
             showMenu();
-            isMenuOpened = true;
         }
     });
 
     document.addEventListener("click",(e) => {
         if (isMenuOpened) {
             hideMenu();
-            isMenuOpened = false;
         }
     });
-
-
-}
-function isThereUserEmail() {
-    return email !== null && email !== "";
-}
-async function isEmailInUsersDB() {
-    try {
-        const response = await fetch("http://localhost:8080/is-user-in-users-db", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({email}),
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            const isUserInUsersDB = data.data;
-            return isUserInUsersDB;
-        } else {
-            alert(data.errorMessage);
-        }
-    } catch (error) {
-        alert(error.message);
-    }
 }
 function lockCaret() {
     input.setSelectionRange(currentCaretPosition,currentCaretPosition);
@@ -273,125 +242,6 @@ function checkAndRemoveTooltip() {
         tooltipBackground.addEventListener("transitionend", handleTransitionEnd, { once: true });
     }
 }
-function showMenu() {
-    const menuBackground = document.createElement("div");
-    menuBackground.id = "menu-background";
-    menuBackground.className = "menu-background";
-
-
-    const myStatsButton = document.createElement("div");
-    myStatsButton.className = "menu-button";
-    myStatsButton.style.marginBottom = "4px";
-
-    const myStatsText = document.createElement("p");
-    myStatsText.className = "menu-button-text";
-    myStatsText.textContent = "My stats";
-
-    const myStatsSymbol = document.createElement("img");
-    myStatsSymbol.className = "my-stats-button-symbol";
-    myStatsSymbol.src = "../assets/symbols/stats.png";
-    myStatsSymbol.width = 27;
-    myStatsSymbol.height = 27;
-
-
-    const settingsButton = document.createElement("div");
-    settingsButton.className = "menu-button";
-    settingsButton.style.marginTop = "4px";
-
-    const settingsText = document.createElement("p");
-    settingsText.className = "menu-button-text";
-    settingsText.textContent = "Settings";
-
-    const settingsSymbol = document.createElement("img");
-    settingsSymbol.className = "settings-button-symbol";
-    settingsSymbol.src = "../assets/symbols/settings.png";
-    settingsSymbol.width = 21;
-    settingsSymbol.height = 21;
-
-
-    const menuLine = document.createElement("div");
-    menuLine.style.height = "0.5px";
-    menuLine.style.marginLeft = "8px";
-    menuLine.style.marginRight = "8px";
-    menuLine.style.backgroundColor = "#2C2C2C";
-
-
-    const logoutButton = document.createElement("div");
-    logoutButton.id = "logout-button"
-    logoutButton.className = "menu-button";
-    logoutButton.addEventListener("click",async (e) => {
-        e.preventDefault();
-        hideMenu();
-        isMenuOpened = false;
-        await deleteSessionEmail();
-        reloadMainPage();
-    });
-
-    const logoutButtonText = document.createElement("p");
-    logoutButtonText.textContent = "Log out";
-    logoutButtonText.className = "menu-logout-button-text";
-
-    const logoutButtonSymbol = document.createElement("img");
-    logoutButtonSymbol.className = "menu-logout-button-symbol";
-    logoutButtonSymbol.src = "../assets/symbols/logout.png";
-    logoutButtonSymbol.width = 20;
-    logoutButtonSymbol.height = 20;
-
-
-
-    myStatsButton.append(myStatsText,myStatsSymbol);
-    settingsButton.append(settingsText,settingsSymbol);
-    logoutButton.append(logoutButtonText,logoutButtonSymbol);
-    menuBackground.append(myStatsButton,settingsButton,menuLine,logoutButton);
-    document.body.appendChild(menuBackground);
-
-    // Trigger fade-in (after the element is in the DOM)
-    requestAnimationFrame(() => {
-        menuBackground.style.opacity = "1";
-    });
-
-    menuBackground.addEventListener("click",(e) => {
-        e.stopPropagation();
-    })
-}
-function hideMenu() {
-    const menu = document.getElementById("menu-background");
-    // Fade out smoothly before removing
-    menu.style.opacity = "0";
-
-    // Wait for the transition to finish before removing
-    menu.addEventListener(
-        "transitionend",
-        () => {
-            if (menu.parentElement) {
-                document.body.removeChild(menu);
-            }
-        },
-        { once: true } // ensures it runs only once
-    );
-}
-async function deleteSessionEmail() {
-    try {
-        const response = await fetch("http://localhost:8080/delete-session-email", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            credentials: "include"
-        });
-
-        const data = await response.json();
-
-        if (!data.success) {
-            alert(data.errorMessage);
-        }
-    } catch (error) {
-        alert(error.message);
-    }
-}
-function reloadMainPage() {
-    window.location.href = '../pages/index.html';
-}
 
 function highlightCorrectChar(charPosition) {
     const correctChar = input.value.charAt(charPosition);
@@ -453,9 +303,14 @@ function startTimer(e) {
     }, 1000);
 }
 async function onTimerEnd() {
-    hideMainPageAndShowResults();
-    await checkAndShowRecords();
-    await checkAndSaveResults();
+    try {
+        hideMainPageAndShowResults();
+        await checkAndShowRecords();
+        await checkAndSaveResults();
+    } catch (error) {
+        alert(error.message);
+    }
+
 }
 function recountCorrectWords() {
     if (isCurrentWordCorrect) {
@@ -598,7 +453,7 @@ function showTotalWordsLabel() {
     totalWordsLabel.style.display = "block";
     totalWordsLabel.style.margin = "40px auto 0 auto";
     totalWordsLabel.style.width = "384px";
-    totalWordsLabel.style.fontSize = "26px";
+    totalWordsLabel.style.fontSize = "22px";
     totalWordsLabel.style.fontFamily = "'Roboto', sans-serif";
     totalWordsLabel.style.fontWeight = "500";
     totalWordsLabel.style.textAlign = "center"; // optional: center text
@@ -619,15 +474,15 @@ function showTotalWordsLabel() {
 }
 function showTryAgainButton() {
     const tryAgainButtonContainer = document.createElement("div");
-    tryAgainButtonContainer.style.position = "fixed"; // stick to viewport
-    tryAgainButtonContainer.style.left = "0";         // horizontal centering setup
+    tryAgainButtonContainer.style.position = "fixed";
+    tryAgainButtonContainer.style.left = "0";
     tryAgainButtonContainer.style.right = "0";
-    tryAgainButtonContainer.style.margin = "150px auto 20px auto"; // keep your margin
+    tryAgainButtonContainer.style.bottom = "45px";
+    tryAgainButtonContainer.style.margin = "auto";
     tryAgainButtonContainer.style.cursor = "pointer";
     tryAgainButtonContainer.style.width = "300px";
     tryAgainButtonContainer.style.height = "58px";
 
-    // ✅ keep your animation exactly the same
     tryAgainButtonContainer.style.opacity = "0";
     tryAgainButtonContainer.style.transform = "translateX(18px)";
     tryAgainButtonContainer.style.transition = "opacity 0.5s ease, transform 0.5s ease, background-color 0.3s ease";
@@ -661,7 +516,6 @@ function showTryAgainButton() {
     tryAgainButtonContainer.append(tryAgainSymbol,tryAgainButton);
     document.body.appendChild(tryAgainButtonContainer);
 
-    // ✅ Hover effect using events
     tryAgainButton.addEventListener("mouseover", () => {
         tryAgainButton.style.background = "#1C1C1C"; // hover color
     });
@@ -671,45 +525,35 @@ function showTryAgainButton() {
     });
 
     tryAgainButton.addEventListener("click",() => {
-        window.location.href = "../pages/index.html"; // better reset
+        window.location.href = "../pages/index.html";
     });
 
-    // ✅ same animation delay
     setTimeout(() => {
         tryAgainButtonContainer.style.opacity = "1";
         tryAgainButtonContainer.style.transform = "translateX(0)";
     }, 2250);
 }
 async function checkAndSaveResults() {
-    if (email) {
+    if (userId) {
         await saveResults();
     }
 }
 async function saveResults() {
-    try {
-        const response = await fetch("http://localhost:8080/save-results", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userId, totalWords: totalTypedWords, correctWords }),
-        });
+    const response = await fetch(`${API_BASE_URL}/stats/results`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({totalWords: totalTypedWords, correctWords}),
+        credentials: "include",
+    });
 
-        if (!response.ok) {
-            console.error("HTTP error", response.status);
-            return;
-        }
+    const data = await response.json();
 
-        // ✅ Prevent page reload by safely handling JSON
-        const data = await response.json().catch(() => null);
-
-        if (data && !data.success) {
-            alert(data.errorMessage);
-        }
-    } catch (error) {
-        console.error("Fetch error:", error);
+    if (!data.success) {
+        throw new Error(data.error);
     }
 }
 async function checkAndShowRecords() {
-    if (email) {
+    if (userId) {
         const record = await getCorrectWordsRecord();
         setTimeout(function () {
             if (correctWords > record) {
@@ -722,37 +566,25 @@ async function checkAndShowRecords() {
     }
 }
 async function getCorrectWordsRecord() {
-    try {
-        const response = await fetch("http://localhost:8080/get-correct-words-record", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userId }),
-        });
+    const response = await fetch(`${API_BASE_URL}/stats/records/correct-words`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+    });
 
-        if (!response.ok) {
-            console.error("HTTP error", response.status);
-            return null; // return something safe
-        }
+    const data = await response.json();
 
-        const data = await response.json().catch(() => null);
-
-        if (data && data.success) {
-            return data.data; // ✅ return your record here
-        } else {
-            console.error(data?.errorMessage || "Unknown error");
-            return null;
-        }
-    } catch (error) {
-        console.error("Fetch error:", error);
-        return null;
+    if (!data.success) {
+        throw new Error(data.error);
     }
+
+    return data.result;
 }
 
 
 await initMain();
-setEmail().then(async () => {
+await setUserId().then(async () => {
     await setPotentialAvatar();
-    await setUserId();
 });
 setupMainListeners();
 

@@ -1,3 +1,5 @@
+import {API_BASE_URL} from "./config.js";
+
 const toggleLoginPasswordButton = document.getElementById("login-password-input-toggle-button");
 const loginPasswordInput = document.getElementById("login-password-input");
 const dontHaveAccountButton = document.getElementById("auth-signup-navigation-text");
@@ -6,12 +8,16 @@ const forgotPasswordButton = document.getElementById("auth-password-forgot-passw
 const loginPageLoginButton = document.getElementById("auth-login-button");
 const loginEmailErrorLabel = document.getElementById("login-email-error-label");
 const loginPasswordErrorLabel = document.getElementById("login-password-error-label");
-
+const flowTitle = document.getElementById("flow-title");
 
 function initLogin() {
     setupLoginListeners();
 }
 function setupLoginListeners() {
+    flowTitle.addEventListener("click",() => {
+        window.location.href = "../pages/index.html";
+    });
+
     // toggle password
     toggleLoginPasswordButton.addEventListener("click", () => {
         const isPassword = loginPasswordInput.type === "password";
@@ -29,24 +35,12 @@ function setupLoginListeners() {
     });
 
     loginPageLoginButton.addEventListener("click",async () => {
-        try {
-            setLoginButtonLoadingStyle();
-            await checkAndLogin();
-            setLoginButtonDefaultStyle();
-        } catch (error) {
-            alert("An error has occurred: " + error.message);
-            setLoginButtonDefaultStyle();
-        }
+        await login();
     });
 
     loginPasswordInput.addEventListener("keydown", async (e) => {
         if (e.key === "Enter") {
-            try {
-                await checkAndLogin();
-            } catch (error) {
-                alert("An error has occurred: " + error.message);
-                setLoginButtonDefaultStyle();
-            }
+            await login();
         }
     });
 
@@ -54,12 +48,25 @@ function setupLoginListeners() {
         openLoginEmailVerificationWindow();
     });
 }
+async function login() {
+    try {
+        setLoginButtonLoadingStyle();
+        await checkAndLogin();
+        setLoginButtonDefaultStyle();
+    } catch (error) {
+        alert("An error has occurred: " + error.message);
+        setLoginButtonDefaultStyle();
+    }
+}
 async function checkAndLogin() {
     setEmailDefaultStyle();
     setPasswordDefaultStyle();
 
     if (await isEnteredEmailInUsersDB() && await isPasswordCorrect()) {
-        await login();
+        await setSessionEmail();
+        await setUserSessionId();
+        await deleteSessionEmail();
+        loadMainPage();
         setLoginButtonDefaultStyle();
         return;
     }
@@ -107,24 +114,28 @@ function setPasswordDefaultStyle() {
 async function isEnteredEmailInUsersDB() {
     const email = loginEmailInput.value.trim();
 
-    const response = await fetch("http://localhost:8080/is-user-in-users-db", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({email: email}),
+    const response = await fetch(`${API_BASE_URL}/user/availability?email=${encodeURIComponent(email)}`, {
+        method: "GET",
+        credentials: "include"
     });
 
     const data = await response.json();
-    const isUserInVerificationDB = data.data;
 
-    return data.success && isUserInVerificationDB;
+    if (!data.success) {
+        throw new Error(data.error);
+    }
+
+    return data.result;
 }
 async function isPasswordCorrect() {
     const email = loginEmailInput.value.trim();
     const password = loginPasswordInput.value.trim();
 
-    const response = await fetch("http://localhost:8080/is-plain-password-correct", {
+    if (!password) {
+        return false;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/auth/password/validate`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -133,46 +144,64 @@ async function isPasswordCorrect() {
     });
 
     const data = await response.json();
-    const isPlainPasswordCorrect = data.data;
 
-    return data.success && isPlainPasswordCorrect;
+    if (!data.success) {
+        throw new Error(data.error);
+    }
+
+    return data.result;
 }
-async function login() {
-    await setSessionEmail();
+async function setSessionEmail() {
+    const email = loginEmailInput.value.trim();
+
+    const response = await fetch(`${API_BASE_URL}/session/email`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({email}),
+        credentials: "include"
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+        throw new Error(data.error);
+    }
+}
+async function setUserSessionId() {
+    const response = await fetch(`${API_BASE_URL}/session/user-id`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+        throw new Error(data.error);
+    }
+
+}
+async function deleteSessionEmail() {
+    const response = await fetch(`${API_BASE_URL}/session/email`, {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+        throw new Error(data.error);
+    }
+}
+function loadMainPage() {
     window.location.href = '../pages/index.html';
-}
-async function setSessionEmail(email) {
-    if (!email) {
-        email = loginEmailInput.value.trim();
-    }
-
-    try {
-        const response = await fetch("http://localhost:8080/set-session-email", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({email: email}),
-            credentials: "include"
-        });
-
-        const data = await response.json();
-
-        if (!data.success) {
-            alert("Failed to set session email: "+data.errorMessage);
-            setLoginButtonDefaultStyle();
-        }
-    } catch (error) {
-        if (error instanceof Error) {
-            console.error("Error:", error.message);
-            console.error(error.stack);
-            alert("An error occurred: " + error.message);
-            setLoginButtonDefaultStyle();
-        } else {
-            console.error("Unknown error:", error);
-            alert("An unknown error occurred");
-        }
-    }
 }
 function setLoginButtonDefaultStyle() {
     loginPageLoginButton.className = "auth-login-button";

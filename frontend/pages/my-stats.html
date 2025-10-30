@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Stats</title>
+    <link rel="stylesheet" href="../css/my-stats.css">
+    <link rel="stylesheet" href="../css/flow-title.css">
+    <link rel="stylesheet" href="../css/menu.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <p class="flow-title" id="flow-title">Flow</p>
+    <img src="../assets/symbols/user-profile-default.png" alt="User Avatar" class="main-avatar" id="my-stats-main-avatar">
+    <h1 id="my-stats-title">My stats</h1>
+
+    <div class="stats-elements">
+        <div class="stats-chart" id="my-stats-chart">
+            <p class="stats-chart-title">Typing Speed Progress</p>
+            <div class="y-label">WPM</div>
+            <div class="chart-area">
+                <div class="y-numbers">
+                    <span id="y-number4">100</span>
+                    <span id="y-number3">75</span>
+                    <span id="y-number2">50</span>
+                    <span id="y-number1">25</span>
+                </div>
+
+                <!-- Y axis line -->
+                <div class="y-axis"></div>
+
+                <div class="chart-grid" id="chart-grid">
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                    <div class="grid-line"></div>
+                </div>
+
+                <!-- X axis line -->
+                <div class="x-axis"></div>
+
+                <div class="x-numbers" id="x-numbers">
+                    <span id="x-number1">1</span>
+                    <span id="x-number2">2</span>
+                    <span id="x-number3">3</span>
+                    <span id="x-number4">4</span>
+                    <span id="x-number5">5</span>
+                    <span id="x-number6">6</span>
+                    <span id="x-number7">7</span>
+                    <span id="x-number8">8</span>
+                    <span id="x-number9">9</span>
+                    <span id="x-number10">10</span>
+                </div>
+            </div>
+            <div class="x-label" id="xAxis">Sessions</div>
+
+            <!-- ✅ This will be filled in JS -->
+            <svg id="chart-line" class="chart-line"></svg>
+        </div>
+
+        <div class="stats-info">
+            <div class="stats-info-block" id="my-stats-info-block1">
+                <p class="stats-info-block-title">Average accuracy</p>
+                <p class="stats-info-block-value" id="stats-average-accuracy">0%</p>
+            </div>
+            <div class="stats-info-block" id="my-stats-info-block2">
+                <p class="stats-info-block-title">Best WPM</p>
+                <p class="stats-info-block-value" id="stats-best-wpm">0</p>
+            </div>
+            <div class="stats-info-block" id="my-stats-info-block3">
+                <p class="stats-info-block-title">Current streak</p>
+                <p class="stats-info-block-value" id="stats-current-streak">0 days</p>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="../js/menu.js"></script>
+    <script type="module" src="../js/my-stats.js"></script>
+</body>
+</html>

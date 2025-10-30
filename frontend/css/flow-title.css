@@ -1,0 +1,13 @@
+.flow-title {
+    position: absolute;
+    top: 23px;
+    left: 35px;
+
+    font-size: 30px;
+    color: white;
+    font-family: 'Roboto', sans-serif;
+    font-weight: bold;
+    margin: 0;
+    cursor: pointer;
+    user-select: none;
+}

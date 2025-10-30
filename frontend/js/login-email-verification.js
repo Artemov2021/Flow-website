@@ -1,12 +1,18 @@
+import {API_BASE_URL} from "./config.js";
+
 const loginEmailVerificationInput = document.getElementById("login-email-verification-input");
 const loginEmailVerificationButton = document.getElementById("login-email-verification-button");
 const loginEmailVerificationErrorLabel = document.getElementById("login-email-verification-error-label");
-
+const flowTitle = document.getElementById("flow-title");
 
 function initLoginEmailVerification() {
     setupLoginEmailVerificationListeners();
 }
 function setupLoginEmailVerificationListeners() {
+    flowTitle.addEventListener("click",() => {
+        window.location.href = "../pages/index.html";
+    });
+
     loginEmailVerificationButton.addEventListener("click",async (e) => {
         await handleButtonClick(e);
     });
@@ -23,12 +29,13 @@ async function handleButtonClick(event) {
     event?.preventDefault();
     setNextButtonLoadingStyle();
     await checkAndSendLoginCode();
+    setNextButtonDefaultStyle();
 }
 function setNextButtonDefaultStyle() {
-    loginEmailVerificationButton.className = "auth-login-verification-button-loading";
+    loginEmailVerificationButton.className = "auth-login-verification-button";
 }
 function setNextButtonLoadingStyle() {
-    loginEmailVerificationButton.className = "auth-login-verification-button";
+    loginEmailVerificationButton.className = "auth-login-verification-button-loading";
 }
 async function checkAndSendLoginCode() {
     try {
@@ -39,6 +46,7 @@ async function checkAndSendLoginCode() {
         if (await isUserInUsersDB(email)) {
             await sendLoginVerificationCode(email);
             await setLoginSessionEmail(email);
+            showLoginVerificationWindow();
         } else {
             setLoginInputErrorStyle("The email address is wrong");
         }
@@ -51,28 +59,18 @@ async function isUserInUsersDB(email) {
         return false;
     }
 
-    try {
-        const response = await fetch("http://localhost:8080/is-user-in-users-db", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({email: email}),
-        });
+    const response = await fetch(`${API_BASE_URL}/user/availability?email=${encodeURIComponent(email)}`, {
+        method: "GET",
+        credentials: "include",
+    });
 
-        const data = await response.json();
+    const data = await response.json();
 
-        if (data.success) {
-            const isUserInUsersDB = data.data;
-            return isUserInUsersDB;
-        } else {
-            alert(data.errorMessage);
-            return false;
-        }
-    } catch (error) {
-        alert(error.message);
-        return false;
+    if (!data.success) {
+        throw new Error(data.error);
     }
+
+    return data.result;
 }
 function setLoginInputErrorStyle(error) {
     // set error label
@@ -91,62 +89,34 @@ function setLoginInputDefaultStyle() {
     loginEmailVerificationInput.className = "auth-email-input";
 }
 async function sendLoginVerificationCode(email) {
-    try {
-        const response = await fetch("http://localhost:8080/send-login-code", {
-            method: "POST",
-            headers: {
+    const response = await fetch(`${API_BASE_URL}/auth/login/request-code`, {
+        method: "POST",
+        headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({email: email}),
-            credentials: "include"
-        });
+        body: JSON.stringify({email}),
+    });
 
-        const data = await response.json();
+    const data = await response.json();
 
-        if (data.success) {
-            showLoginVerificationWindow();
-        } else {
-            alert("Failed to send verification email.");
-        }
-    } catch (error) {
-        if (error instanceof Error) {
-            console.error("Error:", error.message);
-            console.error(error.stack);
-            alert("An error occurred: " + error.message);
-            setNextButtonDefaultStyle();
-        } else {
-            console.error("Unknown error:", error);
-            alert("An unknown error occurred");
-        }
+    if (!data.success) {
+       throw new Error(data.error);
     }
 }
 async function setLoginSessionEmail(email) {
-    try {
-        const response = await fetch("http://localhost:8080/set-session-email", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({email: email}),
-            credentials: "include"
-        });
+    const response = await fetch(`${API_BASE_URL}/session/email`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({email}),
+        credentials: "include"
+    });
 
-        const data = await response.json();
+    const data = await response.json();
 
-        if (!data.success) {
-            alert("Failed to set session email");
-            setSignupButtonDefaultStyle();
-        }
-    } catch (error) {
-        if (error instanceof Error) {
-            console.error("Error sending signup code:", error.message);
-            console.error(error.stack);
-            alert("An error occurred: " + error.message);
-            setNextButtonDefaultStyle();
-        } else {
-            console.error("Unknown error:", error);
-            alert("An unknown error occurred");
-        }
+    if (!data.success) {
+        throw new Error(data.error);
     }
 }
 function showLoginVerificationWindow() {
