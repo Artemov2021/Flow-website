@@ -1,5 +1,6 @@
 package com.example.backend.service;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +15,9 @@ import org.slf4j.LoggerFactory;
 public class CleanupService {
 
     private static final Logger logger = LoggerFactory.getLogger(CleanupService.class);
-    private final String DB_URL = "jdbc:sqlite:./data/database.db";
+
+    @Value("${database.url}")
+    private String DB_URL;
 
     @Scheduled(fixedRate = 30000) // Runs every 30 seconds
     public void deleteExpiredCodes() {
@@ -23,10 +26,9 @@ public class CleanupService {
         try (Connection conn = DriverManager.getConnection(DB_URL);
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            int deletedRows = ps.executeUpdate();
-            logger.info("✅ Deleted {} expired verification codes", deletedRows);
+            ps.executeUpdate();
         } catch (Exception e) {
-            logger.error("❌ Failed to delete expired verification codes", e);
+            logger.error("Failed to delete expired verification codes", e);
         }
 
     }

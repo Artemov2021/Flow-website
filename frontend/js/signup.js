@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "./config.js";
+import { API_BASE_URL } from "./common/config.js";
 
 const signupEmailInput = document.getElementById("signup-email-input");
 const toggleSignupPasswordButton = document.getElementById("signup-password-input-toggle-button");
@@ -161,8 +161,6 @@ async function setSessionHashedPassword() {
 function showSignupVerificationPage() {
     window.location.href = '../pages/signup-verification.html';
 }
-
-
 function getBlackBackground() {
     const overlay = document.createElement("div");
     overlay.style.position = "fixed";
@@ -254,7 +252,7 @@ function showOverlayWindow(title,sections) {
     const scrollArea = document.createElement("div");
     scrollArea.style.height = "432px";
     scrollArea.style.overflowY = "auto";   // enables vertical scroll
-    scrollArea.style.overflowX = "hidden"; // ✅ disables horizontal scroll
+    scrollArea.style.overflowX = "hidden"; // disables horizontal scroll
     scrollArea.style.backgroundColor = "transparent";
     scrollArea.style.marginLeft = "10px";
     scrollArea.style.marginRight = "6px";
@@ -318,8 +316,6 @@ function showOverlayWindow(title,sections) {
         document.body.removeChild(overlay);
     });
 }
-
-
 function setSignupButtonLoadingStyle() {
     signupButton.className = "auth-signup-button-loading";
 }

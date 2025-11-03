@@ -65,7 +65,6 @@ public class StatsController {
         try {
             int userId = (int) session.getAttribute("user-id");
             ArrayList<String> dates = statsService.getAllUserSessionsDates(userId);
-            System.out.println(dates);
             int result = countConsecutiveDaysUpToToday(dates);
             return ApiResponse.success(result);
         } catch (Exception e) {

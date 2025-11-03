@@ -1,17 +1,11 @@
 package com.example.backend.service;
 
-import jakarta.mail.*;
-import jakarta.mail.internet.InternetAddress;
-import jakarta.mail.internet.MimeMessage;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import static com.example.backend.common.TimeUtil.getCurrentDate;
 
 import java.sql.*;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Random;
-import java.util.Set;
 
 @Service
 public class AuthService {
@@ -20,12 +14,13 @@ public class AuthService {
     private String DB_URL;
 
     public void signUpUser(String email,String password) throws Exception {
-        String statement = "INSERT INTO users (email,password) VALUES (?,?)";
+        String statement = "INSERT INTO users (email,password,created_at) VALUES (?,?,?)";
 
         try (Connection conn = DriverManager.getConnection(DB_URL);
              PreparedStatement preparedStatement = conn.prepareStatement(statement)) {
             preparedStatement.setString(1,email);
             preparedStatement.setString(2,password);
+            preparedStatement.setString(3,getCurrentDate());
 
             preparedStatement.executeUpdate();
         }

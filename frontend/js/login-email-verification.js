@@ -1,4 +1,4 @@
-import {API_BASE_URL} from "./config.js";
+import {API_BASE_URL} from "./common/config.js";
 
 const loginEmailVerificationInput = document.getElementById("login-email-verification-input");
 const loginEmailVerificationButton = document.getElementById("login-email-verification-button");
@@ -8,6 +8,7 @@ const flowTitle = document.getElementById("flow-title");
 function initLoginEmailVerification() {
     setupLoginEmailVerificationListeners();
 }
+
 function setupLoginEmailVerificationListeners() {
     flowTitle.addEventListener("click",() => {
         window.location.href = "../pages/index.html";
@@ -24,7 +25,6 @@ function setupLoginEmailVerificationListeners() {
         }
     });
 }
-
 async function handleButtonClick(event) {
     event?.preventDefault();
     setNextButtonLoadingStyle();

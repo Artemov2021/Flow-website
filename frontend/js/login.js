@@ -1,4 +1,4 @@
-import {API_BASE_URL} from "./config.js";
+import {API_BASE_URL} from "./common/config.js";
 
 const toggleLoginPasswordButton = document.getElementById("login-password-input-toggle-button");
 const loginPasswordInput = document.getElementById("login-password-input");

@@ -21,16 +21,54 @@ public class UserService {
             return rs.next();
         }
     }
-
     public int getSessionUserId(String email) throws SQLException {
         String statement = "SELECT user_id FROM users WHERE email = ?";
-        System.out.println("trying to get session user id from DB with email: "+email);
 
         try (Connection conn = DriverManager.getConnection(DB_URL);
              PreparedStatement stmt = conn.prepareStatement(statement)) {
             stmt.setString(1,email);
             ResultSet rs = stmt.executeQuery();
             return rs.getInt("user_id");
+        }
+    }
+    public String getEmail(int userId) throws SQLException {
+        String statement = "SELECT email FROM users WHERE user_id = ?";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement stmt = conn.prepareStatement(statement)) {
+            stmt.setInt(1,userId);
+            ResultSet rs = stmt.executeQuery();
+            return rs.getString("email");
+        }
+    }
+    public String getCreatedAtDate(int userId) throws SQLException {
+        String statement = "SELECT created_at FROM users WHERE user_id = ?";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement stmt = conn.prepareStatement(statement)) {
+            stmt.setInt(1,userId);
+            ResultSet rs = stmt.executeQuery();
+            return rs.getString("created_at");
+        }
+    }
+    public void deleteAccount(int userId) throws SQLException {
+        String sql = "DELETE FROM users WHERE user_id = ?";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, userId);
+            stmt.executeUpdate();
+        }
+    }
+    public void deleteSessions(int userId) throws SQLException {
+        String sql = "DELETE FROM sessions WHERE user_id = ?";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, userId);
+            stmt.executeUpdate();
         }
     }
 }

@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "./config.js";
+import { API_BASE_URL } from "./common/config.js";
 import {deleteFromVerificationDB} from "./common/verification.js";
 
 const signupVerificationH2 = document.getElementById("signup-verification-h2");
@@ -15,6 +15,7 @@ async function initSignupVerification() {
     setH2();
     setupSignupVerificationListeners();
 }
+
 async function setEmail() {
     try {
         const res = await fetch(`${API_BASE_URL}/session/email`, {
@@ -75,7 +76,6 @@ function setupSignupVerificationListeners() {
         await signUp();
     });
 }
-
 async function signUp() {
     try {
         const isUserInDB = await isUserInVerificationDB();
@@ -153,7 +153,6 @@ async function signUpUser() {
         throw new Error(data.error);
     }
 }
-
 async function deleteSessionEmail() {
     const response = await fetch(`${API_BASE_URL}/session/email`, {
         method: "DELETE",
@@ -199,10 +198,8 @@ async function setSessionUserId() {
         throw new Error(data.error);
     }
 }
-
 function showError(text) {
     inputs.forEach((input) => {
-        // Example: set different background colors
         input.className = "signup-verification-input-error";
     });
 
@@ -210,7 +207,6 @@ function showError(text) {
 }
 function setDefaultStyle() {
     inputs.forEach((input) => {
-        // Example: set different background colors
         input.className = "signup-verification-input-default";
     });
 

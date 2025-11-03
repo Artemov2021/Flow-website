@@ -1,5 +1,7 @@
 package com.example.backend.common;
 
+import org.springframework.web.multipart.MultipartFile;
+
 public class Request {
     private String email;
     private String password;
@@ -7,6 +9,7 @@ public class Request {
     private int userId;
     private int totalWords;
     private int correctWords;
+    private MultipartFile file;
 
     public void setEmail(String email) {
         this.email = email;
@@ -26,6 +29,9 @@ public class Request {
     public void setCorrectWords(int correctWords) {
         this.correctWords = correctWords;
     }
+    public void setFile(MultipartFile file) {
+        this.file = file;
+    }
 
     public String getEmail() {
         return this.email;
@@ -44,5 +50,8 @@ public class Request {
     }
     public int getCorrectWords() {
         return this.correctWords;
+    }
+    public MultipartFile getFile() {
+        return this.file;
     }
 }

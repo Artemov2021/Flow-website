@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 public class TimeUtil {
@@ -17,6 +18,7 @@ public class TimeUtil {
                 .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
     }
     public static int countConsecutiveDaysUpToToday(List<String> dateStrings) {
+        // Use the formatter that matches your input: 2025.10.24
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
         Set<LocalDate> dates = new HashSet<>();
@@ -24,15 +26,24 @@ public class TimeUtil {
             dates.add(LocalDate.parse(s, formatter));
         }
 
-        LocalDate current = LocalDate.now(); // include today
-        int streak = 0;
+        int streak = 1;                      // start with today
+        LocalDate cur = LocalDate.now().minusDays(1); // check yesterday first
 
-        while (dates.contains(current)) {
+        while (dates.contains(cur)) {        // keep going back while each day exists
             streak++;
-            current = current.minusDays(1);
+            cur = cur.minusDays(1);
         }
 
         return streak;
     }
+    public static String getConvertedCreatedAtDate(String inputDate) {
+        // Parse the input string into a LocalDate
+        LocalDate date = LocalDate.parse(inputDate);
 
+        // Define a formatter for the desired output format
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d. MMMM yyyy", Locale.ENGLISH);
+
+        // Format the date
+        return date.format(formatter);
+    }
 }

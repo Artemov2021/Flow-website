@@ -34,6 +34,12 @@ export function showMenu() {
     const settingsButton = document.createElement("div");
     settingsButton.className = "menu-button";
     settingsButton.style.marginTop = "4px";
+    settingsButton.addEventListener("click",async (e) => {
+        e.preventDefault();
+        hideMenu();
+        isMenuOpened = false;
+        openSettingsPage();
+    });
 
     const settingsText = document.createElement("p");
     settingsText.className = "menu-button-text";
@@ -110,7 +116,10 @@ export function hideMenu() {
 }
 
 function openMyStatsPage() {
-    window.location.href = '../pages/my-stats.html';
+    window.location.href = './../pages/my-stats.html';
+}
+function openSettingsPage() {
+    window.location.href = './../pages/settings.html';
 }
 async function deleteSessionUserId() {
     const response = await fetch(`${API_BASE_URL}/session/user-id`, {
@@ -128,5 +137,5 @@ async function deleteSessionUserId() {
     }
 }
 function reloadMainPage() {
-    window.location.href = '../pages/index.html';
+    window.location.href = './../pages/index.html';
 }

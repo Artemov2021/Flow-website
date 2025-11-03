@@ -86,15 +86,13 @@ public class VerificationService {
     }
     public void deleteUserFromVerificationDB(String email) throws Exception {
         String statement = "DELETE FROM verification_codes WHERE email = ?";
-        System.out.println("email: "+email);
 
         try (Connection conn = DriverManager.getConnection(DB_URL);
              PreparedStatement stmt = conn.prepareStatement(statement)) {
 
             stmt.setString(1, email);
-            int rowsAffected = stmt.executeUpdate(); // <-- capture number of rows deleted
+            stmt.executeUpdate();
 
-            System.out.println("Rows deleted: " + rowsAffected);
         }
     }
 }

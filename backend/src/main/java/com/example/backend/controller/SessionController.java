@@ -6,7 +6,6 @@ import com.example.backend.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -75,7 +74,6 @@ public class SessionController {
         try {
             String email = (String) session.getAttribute("email");
             int userId = userService.getSessionUserId(email);
-            System.out.println("Retrieved user id from db: "+userId);
             session.setAttribute("user-id",userId);
             return ApiResponse.success();
         } catch (Exception e) {

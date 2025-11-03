@@ -1,0 +1,192 @@
+body {
+    background-color: #0F0F0F;
+    margin: 0;
+    padding-top: 105px;
+    position: relative;
+}
+
+h1 {
+    margin: 0 auto 0 auto;
+    text-align: center;
+    color: white;
+    font-size: 42px;
+    font-family: 'Roboto', sans-serif;
+    font-weight: bold;
+    width: fit-content;
+
+    opacity: 0;
+    transform: translateX(18px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.main-avatar {
+    position: absolute;
+    top: 20px;
+    right: 33px;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.settings-info-background {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    margin: 80px auto 0 auto;
+    padding: 0 34px 30px 34px;
+
+    background-color: #121212;
+    width: fit-content;
+    border-radius: 24px;
+
+    opacity: 0;
+    transform: translateX(18px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.settings-info-avatar {
+    margin: 40px auto 0 auto;
+    width: 135px;
+    height: 135px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+.divider {
+     margin: 35px 0 35px 0;
+
+     height: 1.5px;
+     background: #2C2C2C;
+     width: 100%;
+ }
+.settings-info-group {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 22px;
+    width: 100%;
+}
+.settings-info-group-sector {
+    display: flex;
+    column-gap: 45px; /* minimal spacing between them */
+    justify-content: space-between;
+}
+.settings-info-group-sector-title {
+    margin: 0;
+
+    font-size: 22px;
+    color: #DADADA;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
+}
+.settings-info-group-sector-value {
+    margin: 0;
+
+    font-size: 22px;
+    color: white;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
+}
+.settings-info-delete-account-button-group {
+    position: relative;
+    align-self: flex-end;
+}
+.settings-info-delete-account-button {
+    height: 45px;
+
+    background-color: #171717;
+    border: none;
+    color: #FF4545;
+    font-family: 'Roboto', sans-serif;
+    font-size: 18px;
+    border-radius: 10px;
+
+    padding-left: 44px;
+    padding-right: 22px;
+
+    cursor: pointer;
+}
+.settings-info-delete-account-button:hover {
+    background-color: #1B1B1B;
+}
+.settings-info-delete-account-button-symbol {
+    position: absolute;
+    top: 10px;
+    left: 14px;
+
+    width: 23px;
+    height: 23px;
+    cursor: pointer;
+}
+.avatar-buttons-background {
+    position: absolute;
+    top: 167px;
+    left: 50%;
+    transform: translateX(-50%);
+
+    background-color: #1C1C1C;
+    border-radius: 10px;
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    transition: opacity 0.15s ease;
+    opacity: 0;
+
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+.avatar-edit-button {
+    width: 145px;
+    height: 38px;
+
+    background-color: #1C1C1C;
+    border-radius: 6px;
+    border: none;
+    color: white;
+    font-size: 14px;
+    font-family: 'Roboto', sans-serif;
+    padding-left: 27px;
+
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+.avatar-edit-button:hover {
+    background-color: #282828;
+}
+.avatar-edit-symbol {
+    position: absolute;
+
+    top: 17px;
+    left: 16px;
+
+    width: 14px;
+    height: 14px;
+    pointer-events: none;
+}
+.avatar-delete-button {
+    width: 145px;
+    height: 38px;
+
+    background-color: #1C1C1C;
+    border-radius: 6px;
+    border: none;
+    color: white;
+    font-size: 14px;
+    font-family: 'Roboto', sans-serif;
+    padding-left: 20px;
+
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+.avatar-delete-button:hover {
+    background-color: #282828;
+}
+.avatar-delete-symbol {
+    position: absolute;
+
+    top: 57px;
+    left: 16px;
+
+    width: 16px;
+    height: 16px;
+}

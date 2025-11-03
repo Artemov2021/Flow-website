@@ -1,5 +1,5 @@
-import {hideMenu, isMenuOpened, showMenu} from "./menu.js";
-import {API_BASE_URL} from "./config.js";
+import {hideMenu, isMenuOpened, showMenu} from "./common/menu.js";
+import {API_BASE_URL} from "./common/config.js";
 
 const statsMainAvatar = document.getElementById("my-stats-main-avatar");
 const myStatsTitle = document.getElementById("my-stats-title");
@@ -15,9 +15,14 @@ const chartLine = document.getElementById("chart-line");
 const flowTitle = document.getElementById("flow-title");
 
 let userData = [];
+let userId = null;
+let hasAvatar = false;
 
 async function initMyStats() {
     try {
+        await setUserId();
+        await validateUserAvatar();
+        setMyStatsMainAvatar();
         setupMyStatsListeners();
         showAppearingAnimations();
         await setData();
@@ -31,7 +36,42 @@ async function initMyStats() {
         console.log(error.message);
     }
 }
+async function setUserId() {
+    const response = await fetch(`${API_BASE_URL}/session/user-id`, {
+        method: "GET",
+        credentials: "include"
+    });
 
+    const data = await response.json();
+
+    if (!data.success) {
+        throw new Error(data.error);
+    }
+
+    userId = data.result;
+    console.log("User session ID: ", data.result);
+}
+async function validateUserAvatar() {
+    const response = await fetch(`${API_BASE_URL}/user/has-avatar`, {
+        method: "GET",
+        credentials: "include"
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+        console.log(data.error);
+    }
+
+    if (data.result) {
+        hasAvatar = true;
+    }
+}
+function setMyStatsMainAvatar() {
+    if (hasAvatar) {
+        statsMainAvatar.src = `${API_BASE_URL}/uploads/avatars/${userId}.jpg?${Date.now()}`;
+    }
+}
 async function setData() {
     const response = await fetch(`${API_BASE_URL}/stats/sessions`, {
         method: "GET",
@@ -54,13 +94,13 @@ function setupMyStatsListeners() {
     flowTitle.addEventListener("click",() => {
         window.location.href = "../pages/index.html";
     });
+
     statsMainAvatar.addEventListener("click",(e) => {
         if (!isMenuOpened) {
             e.stopPropagation();
             showMenu();
         }
     });
-
     document.addEventListener("click",(e) => {
         if (isMenuOpened) {
             hideMenu();
@@ -106,7 +146,6 @@ async function showGraphLine() {
             adjustYNumbers(userData);
             adjustXNumbers(userData);
 
-            // ✅ Get real chart size dynamically
             const chartWidth = chartGrid.clientWidth - 3;
             const chartHeight = 286;
             const maxScaleWPM = getMaxYAxisNumber(userData);
@@ -170,6 +209,8 @@ async function showBestWPM() {
 }
 async function showCurrentStreak() {
     const currentStreakInDays = await getCurrentStreak();
+
+    console.log("current streak: "+currentStreakInDays);
 
     startCountingAnimation(currentStreak,currentStreakInDays," days");
 }
@@ -248,14 +289,13 @@ function getRangeForSessions(sessions) {
         let max = step * 10;
 
         if (sessions >= min && sessions <= max) {
-            // ✅ Found the correct range
             const range = [];
             for (let i = 1; i <= 10; i++) {
                 range.push(step * i);
             }
             return range;
         }
-        step *= 5; // 🔁 Go to next level
+        step *= 5;
     }
 }
 function getSortedWPMData(rawWPMData) {

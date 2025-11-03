@@ -27,7 +27,7 @@ public class StatsService {
             }
 
             ps.setInt(1, userId);
-            ps.setInt(2, lastSession + 1); // ✅ safe now
+            ps.setInt(2, lastSession + 1);
             ps.setInt(3, totalWords);
             ps.setInt(4, correctWords);
             ps.setString(5,getCurrentDate());

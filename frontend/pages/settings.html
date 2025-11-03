@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Settings</title>
+    <link rel="stylesheet" href="../css/settings.css">
+    <link rel="stylesheet" href="../css/flow-title.css">
+    <link rel="stylesheet" href="../css/menu.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <p class="flow-title" id="flow-title">Flow</p>
+    <img src="../assets/symbols/user-profile-default.png" alt="User Avatar" class="main-avatar" id="settings-main-avatar">
+
+    <h1 id="settings-title">Settings</h1>
+
+    <div class="settings-info-background" id="settings-info-background">
+        <img src="../assets/symbols/user-profile-default.png" alt="User Avatar" class="settings-info-avatar" id="settings-info-avatar">
+        <div class="divider"></div>
+        <div class="settings-info-group">
+            <div class="settings-info-group-sector">
+                <p class="settings-info-group-sector-title">Email:</p>
+                <p class="settings-info-group-sector-value" id="settings-info-group-sector-email">example@gmail.com</p>
+            </div>
+            <div class="settings-info-group-sector">
+                <p class="settings-info-group-sector-title">Created at:</p>
+                <p class="settings-info-group-sector-value" id="settings-info-group-sector-created-at">31. October 2025</p>
+            </div>
+        </div>
+        <div class="divider"></div>
+        <div class="settings-info-delete-account-button-group" id="settings-delete-account-button">
+            <button class="settings-info-delete-account-button">Delete account</button>
+            <img src="../assets/symbols/delete.png" class="settings-info-delete-account-button-symbol">
+        </div>
+    </div>
+
+    <script type="module" src="../js/common/menu.js"></script>
+    <script type="module" src="../js/settings.js"></script>
+</body>
+</html>

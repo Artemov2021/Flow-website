@@ -1,5 +1,5 @@
-import { showMenu, hideMenu, isMenuOpened } from "./menu.js";
-import { API_BASE_URL } from "./config.js";
+import { showMenu, hideMenu, isMenuOpened } from "./common/menu.js";
+import { API_BASE_URL } from "./common/config.js";
 
 const input = document.getElementById("textInput");
 const overlayText = document.getElementById("overlayText");
@@ -13,17 +13,27 @@ const flowTitle = document.getElementById("flow-title");
 
 // typed (white correct and red incorrect chars) and untyped (gradient) texts
 let userId = null;
+let hasAvatarPicture = false;
 let texts = [];
 let currentCaretPosition = 0;
 let isTimerRunning = false;
 let isCurrentWordCorrect = true;
 let tooltipBackground = null;
-let totalSeconds = 5;
-
+let totalSeconds = 30;
 let correctWords = 0;
 let totalTypedWords = 0;
 
 async function initMain() {
+    await setupText();
+    await setUserId().then(async () => {
+        await setPotentialAvatar();
+    });
+    await validateUserAvatarPicture();
+    setAvatarPicture();
+    setupMainListeners();
+
+}
+async function setupText() {
     const text = await getRandomText();
     input.value = text;
 
@@ -54,6 +64,30 @@ async function setPotentialAvatar() {
         }
     } catch (error) {
         alert(error.message);
+    }
+}
+async function validateUserAvatarPicture() {
+    if (userId) {
+        const response = await fetch(`${API_BASE_URL}/user/has-avatar`, {
+            method: "GET",
+            credentials: "include"
+        });
+
+        const data = await response.json();
+
+        if (!data.success) {
+            console.log(data.error);
+        }
+
+        if (data.result) {
+            hasAvatarPicture = true;
+        }
+    }
+}
+function setAvatarPicture() {
+    if (hasAvatarPicture) {
+        const mainAvatar = document.getElementById("main-avatar");
+        mainAvatar.src = `${API_BASE_URL}/uploads/avatars/${userId}.jpg?${Date.now()}`;
     }
 }
 function setupMainListeners() {
@@ -308,6 +342,7 @@ async function onTimerEnd() {
         await checkAndShowRecords();
         await checkAndSaveResults();
     } catch (error) {
+        console.error(error);
         alert(error.message);
     }
 
@@ -349,10 +384,7 @@ function hideMainPageAndShowResults() {
     makeTextInputDisabled();
     hideTimer();
     hideText();
-    showSpeedTitle();
-    showSpeedLabel();
-    showTotalWordsLabel();
-    showTryAgainButton();
+    showResultsElements();
 }
 function makeTextInputDisabled() {
     input.disabled = true;
@@ -375,67 +407,62 @@ function hideText() {
     textGradientCircle.style.transform = 'translateY(40px)';
     textGradientCircle.style.opacity = '0';
 }
-function showSpeedTitle() {
+function showResultsElements() {
+    const resultsElements = document.createElement("div");
+    resultsElements.style.margin = "150px auto 0 auto";
+    resultsElements.style.display = "flex";
+    resultsElements.style.flexDirection = "column";
+    resultsElements.style.alignItems = "center";
+    resultsElements.style.width = "fit-content";
+
+
     const speedTitle = document.createElement("p");
-    speedTitle.textContent = "Your typing speed is";
+    speedTitle.textContent = "Typing speed";
     speedTitle.style.display = "block";
-    speedTitle.style.margin = "180px auto 0 auto";
-    speedTitle.style.width = "300px";
-    speedTitle.style.fontSize = "32px";
+    speedTitle.style.margin = "0 auto 0 auto";
+    speedTitle.style.fontSize = "28px";
     speedTitle.style.fontFamily = "'Roboto', sans-serif";
     speedTitle.style.fontWeight = "600";
     speedTitle.style.textAlign = "center"; // optional: center text
-
     // Gradient text
     speedTitle.style.background = "linear-gradient(90deg, #FFFFFF 0%, #595959 100%)";
     speedTitle.style.webkitBackgroundClip = "text";
     speedTitle.style.backgroundClip = "text";
     speedTitle.style.color = "transparent";
-
     // Start hidden & slightly to the right
     speedTitle.style.opacity = "0";
     speedTitle.style.transform = "translateX(18px)";
     speedTitle.style.transition = "opacity 0.5s ease, transform 0.5s ease";
-
-    document.body.appendChild(speedTitle);
-
     // Delay 1 second before showing
     setTimeout(() => {
         speedTitle.style.opacity = "1";
         speedTitle.style.transform = "translateX(0)";
     }, 350);
-}
-function showSpeedLabel() {
-    const speedLabel = document.createElement("p");
-    speedLabel.textContent = "0 WPM";
-    speedLabel.style.display = "block";
-    speedLabel.style.margin = "40px auto 0 auto";
-    speedLabel.style.width = "384px";
-    speedLabel.style.fontSize = "95px";
-    speedLabel.style.fontFamily = "'Roboto', sans-serif";
-    speedLabel.style.fontWeight = "700";
-    speedLabel.style.textAlign = "center"; // optional: center text
-    speedLabel.style.color = "white";
-
-    // Start hidden & slightly to the right
-    speedLabel.style.opacity = "0";
-    speedLabel.style.transform = "translateX(18px)";
-    speedLabel.style.transition = "opacity 0.7s ease, transform 0.7s ease";
-
-    document.body.appendChild(speedLabel);
-
     // Delay 1 second before showing
     setTimeout(() => {
         speedLabel.style.opacity = "1";
         speedLabel.style.transform = "translateX(0)";
     }, 650);
 
+
+    const speedLabel = document.createElement("p");
+    speedLabel.textContent = "0 WPM";
+    speedLabel.style.display = "block";
+    speedLabel.style.margin = "75px auto 0 auto";
+    speedLabel.style.fontSize = "95px";
+    speedLabel.style.fontFamily = "'Roboto', sans-serif";
+    speedLabel.style.fontWeight = "700";
+    speedLabel.style.textAlign = "center"; // optional: center text
+    speedLabel.style.color = "white";
+    // Start hidden & slightly to the right
+    speedLabel.style.opacity = "0";
+    speedLabel.style.transform = "translateX(18px)";
+    speedLabel.style.transition = "opacity 0.7s ease, transform 0.7s ease";
     // Count up animation
     let current = 0;
     const duration = 1500;
     const steps = 60; // smooth animation
     const increment = correctWords / steps;
-
     setTimeout(() => {
         const counter = setInterval(() => {
             current += increment;
@@ -446,92 +473,99 @@ function showSpeedLabel() {
             speedLabel.textContent = Math.floor(current) + " WPM";
         }, duration / steps);
     }, 700); // start counting after fade-in
-}
-function showTotalWordsLabel() {
+
+
     const totalWordsLabel = document.createElement("p");
     totalWordsLabel.textContent = "Total words: "+totalTypedWords;
     totalWordsLabel.style.display = "block";
-    totalWordsLabel.style.margin = "40px auto 0 auto";
-    totalWordsLabel.style.width = "384px";
+    totalWordsLabel.style.margin = "10px auto 0 auto";
     totalWordsLabel.style.fontSize = "22px";
     totalWordsLabel.style.fontFamily = "'Roboto', sans-serif";
     totalWordsLabel.style.fontWeight = "500";
     totalWordsLabel.style.textAlign = "center"; // optional: center text
     totalWordsLabel.style.color = "#848484";
-
     // Start hidden & slightly to the right
     totalWordsLabel.style.opacity = "0";
     totalWordsLabel.style.transform = "translateX(18px)";
     totalWordsLabel.style.transition = "opacity 0.5s ease, transform 0.5s ease";
-
-    document.body.appendChild(totalWordsLabel);
-
     // Delay 1 second before showing
     setTimeout(() => {
         totalWordsLabel.style.opacity = "1";
         totalWordsLabel.style.transform = "translateX(0)";
     }, 2150);
-}
-function showTryAgainButton() {
-    const tryAgainButtonContainer = document.createElement("div");
-    tryAgainButtonContainer.style.position = "fixed";
-    tryAgainButtonContainer.style.left = "0";
-    tryAgainButtonContainer.style.right = "0";
-    tryAgainButtonContainer.style.bottom = "45px";
-    tryAgainButtonContainer.style.margin = "auto";
-    tryAgainButtonContainer.style.cursor = "pointer";
-    tryAgainButtonContainer.style.width = "300px";
-    tryAgainButtonContainer.style.height = "58px";
 
+
+    const tryAgainButtonContainer = document.createElement("div");
+    tryAgainButtonContainer.style.margin = "75px auto 0 auto";
+    tryAgainButtonContainer.style.transition = "opacity 0.5s ease, transform 0.5s ease";
     tryAgainButtonContainer.style.opacity = "0";
     tryAgainButtonContainer.style.transform = "translateX(18px)";
-    tryAgainButtonContainer.style.transition = "opacity 0.5s ease, transform 0.5s ease, background-color 0.3s ease";
+    tryAgainButtonContainer.style.display = "block";
+    tryAgainButtonContainer.style.justifyContent = "center";
+
+    const tryAgainText = document.createElement("span");
+    tryAgainText.textContent = "Try again";
+    tryAgainText.style.display = "inline-block";
+    tryAgainText.style.transform = "translateX(5px)"; // move text 5px right
 
     const tryAgainSymbol = document.createElement("img");
-    tryAgainSymbol.style.position = "absolute";
-    tryAgainSymbol.style.marginLeft = "86px";
-    tryAgainSymbol.style.marginTop = "16px";
     tryAgainSymbol.src = "../assets/symbols/try-again-symbol.png";
     tryAgainSymbol.width = 24;
     tryAgainSymbol.height = 25;
+    tryAgainSymbol.style.position = "absolute";
+    tryAgainSymbol.style.left = "calc(50% - 78px)"; // roughly 5px left of text start
+    tryAgainSymbol.style.top = "50%";
+    tryAgainSymbol.style.transform = "translateY(-50%)";
     tryAgainSymbol.style.pointerEvents = "none";
 
     const tryAgainButton = document.createElement("button");
-    tryAgainButton.textContent = "Try again";
-    tryAgainButton.style.display = "block";
-    tryAgainButton.style.width = "100%";
-    tryAgainButton.style.height = "100%";
+    tryAgainButton.style.position = "relative";
+    tryAgainButton.style.display = "flex";
+    tryAgainButton.style.alignItems = "center";
+    tryAgainButton.style.justifyContent = "center";
+    tryAgainButton.style.height = "58px";
+    tryAgainButton.style.padding = "0";
     tryAgainButton.style.fontSize = "23px";
-    tryAgainButton.style.fontFamily = "'Roboto', sans-serif";
     tryAgainButton.style.fontWeight = "500";
-    tryAgainButton.style.textAlign = "center";
     tryAgainButton.style.color = "white";
     tryAgainButton.style.background = "#171717";
     tryAgainButton.style.border = "none";
     tryAgainButton.style.borderRadius = "16px";
-    tryAgainButton.style.paddingLeft = "40px";
     tryAgainButton.style.cursor = "pointer";
-
-
-    tryAgainButtonContainer.append(tryAgainSymbol,tryAgainButton);
-    document.body.appendChild(tryAgainButtonContainer);
-
+    tryAgainButton.style.transition = "background 0.3s ease, transform 0.3s ease";
+    tryAgainButton.style.transform = "none";
     tryAgainButton.addEventListener("mouseover", () => {
         tryAgainButton.style.background = "#1C1C1C"; // hover color
     });
-
     tryAgainButton.addEventListener("mouseout", () => {
         tryAgainButton.style.background = "#171717"; // back to normal
     });
-
     tryAgainButton.addEventListener("click",() => {
         window.location.href = "../pages/index.html";
     });
-
     setTimeout(() => {
         tryAgainButtonContainer.style.opacity = "1";
         tryAgainButtonContainer.style.transform = "translateX(0)";
     }, 2250);
+
+    tryAgainButton.append(tryAgainSymbol, tryAgainText);
+    tryAgainButtonContainer.appendChild(tryAgainButton);
+    resultsElements.append(speedTitle,speedLabel,totalWordsLabel,tryAgainButtonContainer);
+    document.body.appendChild(resultsElements);
+
+    // Wait for animation + rendering to finish before matching widths
+    setTimeout(() => {
+        const wpmWidth = speedLabel.offsetWidth;
+
+        // Apply width to both container and button
+        tryAgainButtonContainer.style.width = `${wpmWidth}px`;
+        tryAgainButtonContainer.style.width = "100%";
+        tryAgainButton.style.width = "100%";
+
+        // Keep proportions consistent (centered + rounded)
+        tryAgainButton.style.maxWidth = "480px"; // optional limit for large screens
+        tryAgainButton.style.minWidth = "220px"; // optional lower limit
+    }, 800);
 }
 async function checkAndSaveResults() {
     if (userId) {
@@ -581,11 +615,5 @@ async function getCorrectWordsRecord() {
     return data.result;
 }
 
-
 await initMain();
-await setUserId().then(async () => {
-    await setPotentialAvatar();
-});
-setupMainListeners();
-
 
