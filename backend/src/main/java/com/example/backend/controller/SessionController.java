@@ -15,6 +15,11 @@ public class SessionController {
     @Autowired
     private UserService userService;
 
+    @GetMapping("/health")
+    public String health() {
+        return "✅ Backend is running";
+    }
+
     @PostMapping("/email")
     public ApiResponse<Void> setSessionEmail(@RequestBody Request request, HttpSession session) {
         try {
