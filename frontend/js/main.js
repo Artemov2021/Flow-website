@@ -19,7 +19,7 @@ let currentCaretPosition = 0;
 let isTimerRunning = false;
 let isCurrentWordCorrect = true;
 let tooltipBackground = null;
-let totalSeconds = 30;
+let totalSeconds = 60;
 let correctWords = 0;
 let totalTypedWords = 0;
 
@@ -55,7 +55,6 @@ async function setUserId() {
     }
 
     userId = data.result;
-    console.log("User session ID: ", data.result);
 }
 async function setPotentialAvatar() {
     try {

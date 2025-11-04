@@ -233,21 +233,23 @@ function removeSettingsMainAvatar() {
     settingsMainAvatar.src = `../assets/symbols/user-profile-default.png`;
 }
 async function deleteAvatar() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/user/avatar`, {
-            method: "DELETE",
-            credentials: "include",
-        });
+    if (hasAvatarPicture) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/user/avatar`, {
+                method: "DELETE",
+                credentials: "include",
+            });
 
-        const data = await response.json();
+            const data = await response.json();
 
-        if (!data.success) {
-            console.error(data.error);
-            alert(data.error);
+            if (!data.success) {
+                console.error(data.error);
+                alert(data.error);
+            }
+        } catch (err) {
+            console.error(err);
+            alert(err.message);
         }
-    } catch (err) {
-        console.error(err);
-        alert(err.message);
     }
 }
 async function setSettingsInfoEmail() {
@@ -345,8 +347,8 @@ async function showDeleteAccountConfirmation() {
     deleteButton.style.cursor = "pointer";
     deleteButton.addEventListener("click",async () => {
         document.body.removeChild(confirmationOverlay);
-        await deleteAccount();
         await deleteAvatar();
+        await deleteAccount();
         await deleteAllUserSessions();
         await deleteSessionUserId();
         loadMainPage();
