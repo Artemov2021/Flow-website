@@ -6,6 +6,7 @@ import com.example.backend.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,8 +17,8 @@ public class SessionController {
     private UserService userService;
 
     @GetMapping("/health")
-    public String health() {
-        return "✅ Backend is running";
+    public ResponseEntity<String> health() {
+        return ResponseEntity.ok("Backend alive ✅");
     }
 
     @PostMapping("/email")
