@@ -16,7 +16,7 @@ public class CleanupService {
 
     private static final Logger logger = LoggerFactory.getLogger(CleanupService.class);
 
-    @Value("${database.url}")
+    @Value("${spring.datasource.url}")
     private String DB_URL;
 
     @Scheduled(fixedRate = 30000) // Runs every 30 seconds

@@ -19,9 +19,6 @@ import java.util.concurrent.CompletableFuture;
 @RequestMapping("/auth")
 public class AuthController {
 
-    @Value("${database.url}")
-    private String DB_URL;
-
     @Autowired
     private VerificationService verificationService;
 

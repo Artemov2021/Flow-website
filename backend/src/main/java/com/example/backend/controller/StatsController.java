@@ -16,10 +16,6 @@ import static com.example.backend.common.TimeUtil.countConsecutiveDaysUpToToday;
 @RestController
 @RequestMapping("/stats")
 public class StatsController {
-
-    @Value("${database.url}")
-    private String DB_URL;
-
     @Autowired
     private StatsService statsService;
 

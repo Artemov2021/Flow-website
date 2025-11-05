@@ -23,9 +23,6 @@ import static com.example.backend.common.TimeUtil.getConvertedCreatedAtDate;
 @RequestMapping("/user")
 public class UserController {
 
-    @Value("${database.url}")
-    private String DB_URL;
-
     @Autowired
     private UserService userService;
 

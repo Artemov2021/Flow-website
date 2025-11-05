@@ -11,7 +11,7 @@ import java.util.Properties;
 @Service
 public class EmailService {
 
-    @Value("${database.url}")
+    @Value("${spring.datasource.url}")
     private String DB_URL;
 
     public void sendUserVerificationCodeEmail(String email,String code) throws Exception {

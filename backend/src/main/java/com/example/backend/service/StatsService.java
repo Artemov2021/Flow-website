@@ -10,7 +10,7 @@ import java.util.ArrayList;
 @Service
 public class StatsService {
 
-    @Value("${database.url}")
+    @Value("${spring.datasource.url}")
     private String DB_URL;
 
     public void saveResultsToDB(int userId, int totalWords, int correctWords) throws SQLException {

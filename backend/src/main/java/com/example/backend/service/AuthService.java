@@ -10,7 +10,7 @@ import java.sql.*;
 @Service
 public class AuthService {
 
-    @Value("${database.url}")
+    @Value("${spring.datasource.url}")
     private String DB_URL;
 
     public void signUpUser(String email,String password) throws Exception {

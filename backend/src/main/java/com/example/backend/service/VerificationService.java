@@ -17,7 +17,7 @@ import static com.example.backend.common.TimeUtil.getCurrentTime;
 @Service
 public class VerificationService {
 
-    @Value("${database.url}")
+    @Value("${spring.datasource.url}")
     private String DB_URL;
 
     public boolean isUserInVerificationDB(String email) throws Exception {

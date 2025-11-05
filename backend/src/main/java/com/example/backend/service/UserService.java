@@ -8,7 +8,7 @@ import java.sql.*;
 @Service
 public class UserService {
 
-    @Value("${database.url}")
+    @Value("${spring.datasource.url}")
     private String DB_URL;
 
     public boolean isUserInUsersDB(String email) throws Exception {
