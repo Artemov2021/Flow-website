@@ -11,7 +11,7 @@ function initLoginEmailVerification() {
 
 function setupLoginEmailVerificationListeners() {
     flowTitle.addEventListener("click",() => {
-        window.location.href = "../pages/index.html";
+        window.location.href = "../index.html";
     });
 
     loginEmailVerificationButton.addEventListener("click",async (e) => {

@@ -91,7 +91,7 @@ function setAvatarPicture() {
 }
 function setupMainListeners() {
     flowTitle.addEventListener("click",() => {
-        window.location.href = "../pages/index.html";
+        window.location.href = "../index.html";
     });
 
     // Stop caret from moving on click
@@ -540,7 +540,7 @@ function showResultsElements() {
         tryAgainButton.style.background = "#171717"; // back to normal
     });
     tryAgainButton.addEventListener("click",() => {
-        window.location.href = "../pages/index.html";
+        window.location.href = "../index.html";
     });
     setTimeout(() => {
         tryAgainButtonContainer.style.opacity = "1";

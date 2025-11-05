@@ -92,7 +92,7 @@ async function setData() {
 
 function setupMyStatsListeners() {
     flowTitle.addEventListener("click",() => {
-        window.location.href = "../pages/index.html";
+        window.location.href = "../index.html";
     });
 
     statsMainAvatar.addEventListener("click",(e) => {

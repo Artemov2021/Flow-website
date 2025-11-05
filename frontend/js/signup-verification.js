@@ -39,7 +39,7 @@ function setH2() {
 }
 function setupSignupVerificationListeners() {
     flowTitle.addEventListener("click",() => {
-        window.location.href = "../pages/index.html";
+        window.location.href = "../index.html";
     });
 
     // Sign up verification inputs
@@ -213,7 +213,7 @@ function setDefaultStyle() {
     signupVerificationErrorLabel.textContent = "";
 }
 function showMainWindow() {
-    window.location.href = '../pages/index.html';
+    window.location.href = '../index.html';
 }
 
 await initSignupVerification();

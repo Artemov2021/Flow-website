@@ -38,7 +38,7 @@ function setLoginVerificationH2() {
 }
 function setupLoginVerificationListeners() {
     flowTitle.addEventListener("click",() => {
-        window.location.href = "../pages/index.html";
+        window.location.href = "../index.html";
     });
 
     // Login verification inputs
@@ -174,7 +174,7 @@ function setDefaultStyle() {
     loginVerificationErrorLabel.textContent = "";
 }
 function showMainWindow() {
-    window.location.href = '../pages/index.html';
+    window.location.href = '../index.html';
 }
 
 await initLoginVerification();

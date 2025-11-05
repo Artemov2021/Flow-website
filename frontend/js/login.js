@@ -15,7 +15,7 @@ function initLogin() {
 }
 function setupLoginListeners() {
     flowTitle.addEventListener("click",() => {
-        window.location.href = "../pages/index.html";
+        window.location.href = "../index.html";
     });
 
     // toggle password
@@ -201,7 +201,7 @@ async function deleteSessionEmail() {
     }
 }
 function loadMainPage() {
-    window.location.href = '../pages/index.html';
+    window.location.href = '../index.html';
 }
 function setLoginButtonDefaultStyle() {
     loginPageLoginButton.className = "auth-login-button";

@@ -57,7 +57,7 @@ async function validateUserAvatar() {
 }
 function setupSettingsListener() {
     flowTitle.addEventListener("click",() => {
-        window.location.href = "../pages/index.html";
+        window.location.href = "../index.html";
     });
 
     settingsMainAvatar.addEventListener("click",(e) => {
@@ -444,7 +444,7 @@ async function deleteAllUserSessions() {
     }
 }
 function loadMainPage() {
-    window.location.href = './../pages/index.html';
+    window.location.href = '../index.html';
 }
 
 await initSettings();

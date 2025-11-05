@@ -16,7 +16,7 @@ function initSignup() {
 }
 function setupSignupListeners() {
     flowTitle.addEventListener("click",() => {
-        window.location.href = "../pages/index.html";
+        window.location.href = "../index.html";
     });
 
     // Toggle password
