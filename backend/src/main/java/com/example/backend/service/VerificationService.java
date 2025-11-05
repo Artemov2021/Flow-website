@@ -1,6 +1,7 @@
 package com.example.backend.service;
 
 import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -20,10 +21,18 @@ public class VerificationService {
     @Value("${spring.datasource.url}")
     private String DB_URL;
 
+    @Autowired
+    @Value("${PGUSER}")
+    private String DB_USER;
+
+    @Autowired
+    @Value("${PGPASSWORD}")
+    private String DB_PASSWORD;
+
     public boolean isUserInVerificationDB(String email) throws Exception {
         String statement = "SELECT * FROM verification_codes WHERE email = ?";
 
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = DriverManager.getConnection(DB_URL,DB_USER, DB_PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(statement)) {
             stmt.setString(1, email);
             ResultSet rs = stmt.executeQuery();
@@ -35,7 +44,7 @@ public class VerificationService {
         String generatedCode = getRandomVerificationCode();
         String hashedRandomCode = BCrypt.hashpw(generatedCode, BCrypt.gensalt());
 
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = DriverManager.getConnection(DB_URL,DB_USER, DB_PASSWORD);
              PreparedStatement preparedStatement = conn.prepareStatement(statement)) {
             preparedStatement.setString(1, email);
             preparedStatement.setString(2,hashedRandomCode);
@@ -49,7 +58,7 @@ public class VerificationService {
     public String getHashedCode(String email) throws Exception {
         String statement = "SELECT code FROM verification_codes WHERE email = ?";
 
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = DriverManager.getConnection(DB_URL,DB_USER, DB_PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(statement)) {
             stmt.setString(1, email);
             ResultSet rs = stmt.executeQuery();
@@ -60,7 +69,7 @@ public class VerificationService {
         String statement = "SELECT code FROM verification_codes";
         Set<String> codes = new HashSet<>();
 
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = DriverManager.getConnection(DB_URL,DB_USER, DB_PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(statement);
              ResultSet rs = stmt.executeQuery()) {
 
@@ -87,7 +96,7 @@ public class VerificationService {
     public void deleteUserFromVerificationDB(String email) throws Exception {
         String statement = "DELETE FROM verification_codes WHERE email = ?";
 
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = DriverManager.getConnection(DB_URL,DB_USER, DB_PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(statement)) {
 
             stmt.setString(1, email);

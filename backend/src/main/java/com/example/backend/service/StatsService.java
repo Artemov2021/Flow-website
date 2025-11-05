@@ -1,6 +1,8 @@
 package com.example.backend.service;
 
 import static com.example.backend.common.TimeUtil.getCurrentDate;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -13,10 +15,18 @@ public class StatsService {
     @Value("${spring.datasource.url}")
     private String DB_URL;
 
+    @Autowired
+    @Value("${PGUSER}")
+    private String DB_USER;
+
+    @Autowired
+    @Value("${PGPASSWORD}")
+    private String DB_PASSWORD;
+
     public void saveResultsToDB(int userId, int totalWords, int correctWords) throws SQLException {
         String sql = "INSERT INTO sessions (user_id, session, total_words, correct_words,date) VALUES (?, ?, ?, ?,?)";
 
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = DriverManager.getConnection(DB_URL,DB_USER, DB_PASSWORD);
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             int lastSession;
@@ -38,7 +48,7 @@ public class StatsService {
     private int getLastSession(int userId) throws SQLException {
         String statement = "SELECT session FROM sessions WHERE user_id = ? ORDER BY session DESC LIMIT 1";
 
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = DriverManager.getConnection(DB_URL,DB_USER, DB_PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(statement)) {
 
             stmt.setInt(1,userId);
@@ -54,7 +64,7 @@ public class StatsService {
     public int getCorrectWordsRecordFromDB(int userId) throws SQLException {
         String statement = "SELECT MAX(correct_words) AS record FROM sessions WHERE user_id = ?";
 
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = DriverManager.getConnection(DB_URL,DB_USER, DB_PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(statement)) {
 
             stmt.setInt(1, userId);
@@ -71,7 +81,7 @@ public class StatsService {
         ArrayList<Integer> sessions = new ArrayList<>();
         String statement = "SELECT correct_words FROM sessions WHERE user_id = ?";
 
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = DriverManager.getConnection(DB_URL,DB_USER, DB_PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(statement)) {
 
             stmt.setInt(1, userId);
@@ -88,7 +98,7 @@ public class StatsService {
         ArrayList<String> dates = new ArrayList<>();
         String statement = "SELECT date FROM sessions WHERE user_id = ?";
 
-        try (Connection conn = DriverManager.getConnection(DB_URL);
+        try (Connection conn = DriverManager.getConnection(DB_URL,DB_USER, DB_PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(statement)) {
 
             stmt.setInt(1, userId);
