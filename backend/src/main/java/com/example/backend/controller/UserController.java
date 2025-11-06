@@ -19,9 +19,14 @@ import java.nio.file.Paths;
 
 import static com.example.backend.common.TimeUtil.getConvertedCreatedAtDate;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @RestController
 @RequestMapping("/user")
 public class UserController {
+
+    private static final Logger log = LoggerFactory.getLogger(UserController.class);
 
     @Autowired
     private UserService userService;
@@ -32,7 +37,7 @@ public class UserController {
             boolean isUserInUsersDB = userService.isUserInUsersDB(email);
             return ApiResponse.success(isUserInUsersDB);
         } catch (Exception e) {
-            e.printStackTrace(); // <--- LOGS REAL ERROR TO RAILWAY LOGS
+            log.error("Error checking availability for email {}: {}", email, e.getMessage(), e);
             return ApiResponse.error("Failed to check whether user exists");
         }
     }
