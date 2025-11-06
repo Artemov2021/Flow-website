@@ -32,6 +32,7 @@ public class UserController {
             boolean isUserInUsersDB = userService.isUserInUsersDB(email);
             return ApiResponse.success(isUserInUsersDB);
         } catch (Exception e) {
+            e.printStackTrace(); // <--- LOGS REAL ERROR TO RAILWAY LOGS
             return ApiResponse.error("Failed to check whether user exists");
         }
     }
