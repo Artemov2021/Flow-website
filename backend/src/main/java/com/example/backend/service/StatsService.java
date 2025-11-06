@@ -24,7 +24,7 @@ public class StatsService {
     private String DB_PASSWORD;
 
     public void saveResultsToDB(int userId, int totalWords, int correctWords) throws SQLException {
-        String sql = "INSERT INTO sessions (user_id, session, total_words, correct_words,date) VALUES (?, ?, ?, ?,?)";
+        String sql = "INSERT INTO sessions (user_id, session_id, total_words, correct_words,date) VALUES (?, ?, ?, ?,?)";
 
         try (Connection conn = DriverManager.getConnection(DB_URL,DB_USER, DB_PASSWORD);
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -46,7 +46,7 @@ public class StatsService {
         }
     }
     private int getLastSession(int userId) throws SQLException {
-        String statement = "SELECT session FROM sessions WHERE user_id = ? ORDER BY session DESC LIMIT 1";
+        String statement = "SELECT session_id FROM sessions WHERE user_id = ? ORDER BY session DESC LIMIT 1";
 
         try (Connection conn = DriverManager.getConnection(DB_URL,DB_USER, DB_PASSWORD);
              PreparedStatement stmt = conn.prepareStatement(statement)) {
