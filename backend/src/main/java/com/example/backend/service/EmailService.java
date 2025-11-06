@@ -3,7 +3,6 @@ package com.example.backend.service;
 import jakarta.mail.*;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -12,12 +11,13 @@ import java.util.Properties;
 @Service
 public class EmailService {
 
-    @Value("${spring.datasource.url}")
-    private String DB_URL;
+    @Value("${EMAIL_USERNAME}")
+    private String FROM;
 
-    public void sendUserVerificationCodeEmail(String email,String code) throws Exception {
-        String from = "flow.auth.noreply@gmail.com"; // your email
-        String password = "irdz gckg rlck qasq"; // app password for Gmail
+    @Value("${EMAIL_PASSWORD}")
+    private String PASSWORD;
+
+    public void sendUserVerificationCodeEmail(String email, String code) throws Exception {
 
         Properties props = new Properties();
         props.put("mail.smtp.auth", "true");
@@ -26,27 +26,29 @@ public class EmailService {
         props.put("mail.smtp.port", "587");
 
         Session session = Session.getInstance(props, new Authenticator() {
+            @Override
             protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(from, password);
+                return new PasswordAuthentication(FROM, PASSWORD);
             }
         });
 
         Message message = new MimeMessage(session);
-        message.setFrom(new InternetAddress(from));
+        message.setFrom(new InternetAddress(FROM));
         message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(email));
         message.setSubject("Your Verification Code");
 
-        // Use HTML content
-        String htmlContent = "<html>" +
-                "<body>" +
-                "<p style='font-size:42px;'>Your verification code is: " +
-                "<b>" + code + "</b>" +
-                "</p>" +
-                "</body>" +
-                "</html>";
+        String htmlContent =
+                """
+                <html>
+                    <body>
+                        <p style="font-size:42px;">
+                            Your verification code is: <b>%s</b>
+                        </p>
+                    </body>
+                </html>
+                """.formatted(code);
 
         message.setContent(htmlContent, "text/html; charset=utf-8");
-
         Transport.send(message);
     }
 }

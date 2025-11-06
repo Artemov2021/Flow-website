@@ -1,112 +1,86 @@
 package com.example.backend.service;
 
-import static com.example.backend.common.TimeUtil.getCurrentDate;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
+import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
+
+import static com.example.backend.common.TimeUtil.getCurrentDate;
 
 @Service
 public class StatsService {
 
-    @Value("${spring.datasource.url}")
-    private String DB_URL;
+    private final DataSource dataSource;
 
-    @Autowired
-    @Value("${PGUSER}")
-    private String DB_USER;
-
-    @Autowired
-    @Value("${PGPASSWORD}")
-    private String DB_PASSWORD;
+    public StatsService(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
 
     public void saveResultsToDB(int userId, int totalWords, int correctWords) throws SQLException {
-        String sql = "INSERT INTO sessions (user_id, session_id, total_words, correct_words,date) VALUES (?, ?, ?, ?,?)";
+        String sql = "INSERT INTO sessions (user_id, total_words, correct_words, date) VALUES (?, ?, ?, ?)";
 
-        try (Connection conn = DriverManager.getConnection(DB_URL,DB_USER, DB_PASSWORD);
+        try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            int lastSession;
-            try {
-                lastSession = getLastSession(userId); // ✅ get last safely
-            } catch (Exception e) {
-                lastSession = 0; // ✅ if no session exists, start from 0
-            }
-
             ps.setInt(1, userId);
-            ps.setInt(2, lastSession + 1);
-            ps.setInt(3, totalWords);
-            ps.setInt(4, correctWords);
-            ps.setString(5,getCurrentDate());
+            ps.setInt(2, totalWords);
+            ps.setInt(3, correctWords);
+            ps.setString(4, getCurrentDate());
 
             ps.executeUpdate();
         }
     }
-    private int getLastSession(int userId) throws SQLException {
-        String statement = "SELECT session_id FROM sessions WHERE user_id = ? ORDER BY session DESC LIMIT 1";
 
-        try (Connection conn = DriverManager.getConnection(DB_URL,DB_USER, DB_PASSWORD);
-             PreparedStatement stmt = conn.prepareStatement(statement)) {
+    public int getLastSession(int userId) throws SQLException {
+        String sql = "SELECT session_id FROM sessions WHERE user_id = ? ORDER BY session_id DESC LIMIT 1";
 
-            stmt.setInt(1,userId);
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                return rs.getInt("session"); // latest session
-            } else {
-                return 0; // no sessions yet
-            }
-        }
-    }
-    public int getCorrectWordsRecordFromDB(int userId) throws SQLException {
-        String statement = "SELECT MAX(correct_words) AS record FROM sessions WHERE user_id = ?";
-
-        try (Connection conn = DriverManager.getConnection(DB_URL,DB_USER, DB_PASSWORD);
-             PreparedStatement stmt = conn.prepareStatement(statement)) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, userId);
             ResultSet rs = stmt.executeQuery();
 
-            if (rs.next()) {
-                return rs.getInt("record");
-            } else {
-                return 0; // no sessions yet
-            }
+            return rs.next() ? rs.getInt("session_id") : 0;
         }
     }
+
+    public int getCorrectWordsRecordFromDB(int userId) throws SQLException {
+        String sql = "SELECT MAX(correct_words) AS record FROM sessions WHERE user_id = ?";
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+            return rs.next() ? rs.getInt("record") : 0;
+        }
+    }
+
     public ArrayList<Integer> getAllUserSessions(int userId) throws SQLException {
         ArrayList<Integer> sessions = new ArrayList<>();
-        String statement = "SELECT correct_words FROM sessions WHERE user_id = ?";
+        String sql = "SELECT correct_words FROM sessions WHERE user_id = ?";
 
-        try (Connection conn = DriverManager.getConnection(DB_URL,DB_USER, DB_PASSWORD);
-             PreparedStatement stmt = conn.prepareStatement(statement)) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, userId);
             ResultSet rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                sessions.add(rs.getInt("correct_words"));
-            }
+            while (rs.next()) sessions.add(rs.getInt("correct_words"));
         }
 
         return sessions;
     }
+
     public ArrayList<String> getAllUserSessionsDates(int userId) throws SQLException {
         ArrayList<String> dates = new ArrayList<>();
-        String statement = "SELECT date FROM sessions WHERE user_id = ?";
+        String sql = "SELECT date FROM sessions WHERE user_id = ?";
 
-        try (Connection conn = DriverManager.getConnection(DB_URL,DB_USER, DB_PASSWORD);
-             PreparedStatement stmt = conn.prepareStatement(statement)) {
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, userId);
             ResultSet rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                dates.add(rs.getString("date"));
-            }
+            while (rs.next()) dates.add(rs.getString("date"));
         }
 
         return dates;
