@@ -1,5 +1,6 @@
 package com.example.backend.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import javax.sql.DataSource;
 import java.sql.*;
@@ -7,11 +8,8 @@ import java.sql.*;
 @Service
 public class UserService {
 
-    private final DataSource dataSource;
-
-    public UserService(DataSource dataSource) {
-        this.dataSource = dataSource;
-    }
+    @Autowired
+    private DataSource dataSource;
 
     public boolean isUserInUsersDB(String email) throws Exception {
         String sql = "SELECT 1 FROM users WHERE email = ?";

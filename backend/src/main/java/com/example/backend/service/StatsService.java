@@ -1,5 +1,6 @@
 package com.example.backend.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import javax.sql.DataSource;
 import java.sql.*;
@@ -10,11 +11,8 @@ import static com.example.backend.common.TimeUtil.getCurrentDate;
 @Service
 public class StatsService {
 
-    private final DataSource dataSource;
-
-    public StatsService(DataSource dataSource) {
-        this.dataSource = dataSource;
-    }
+    @Autowired
+    private DataSource dataSource;
 
     public void saveResultsToDB(int userId, int totalWords, int correctWords) throws SQLException {
         String sql = "INSERT INTO sessions (user_id, total_words, correct_words, date) VALUES (?, ?, ?, ?)";

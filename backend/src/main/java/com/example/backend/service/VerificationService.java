@@ -1,6 +1,7 @@
 package com.example.backend.service;
 
 import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import javax.sql.DataSource;
 import java.sql.*;
@@ -13,11 +14,8 @@ import static com.example.backend.common.TimeUtil.getCurrentTime;
 @Service
 public class VerificationService {
 
-    private final DataSource dataSource;
-
-    public VerificationService(DataSource dataSource) {
-        this.dataSource = dataSource;
-    }
+    @Autowired
+    private DataSource dataSource;
 
     public boolean isUserInVerificationDB(String email) throws Exception {
         String statement = "SELECT * FROM verification_codes WHERE email = ?";
@@ -100,3 +98,5 @@ public class VerificationService {
         }
     }
 }
+
+
