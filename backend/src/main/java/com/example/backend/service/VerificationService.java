@@ -30,7 +30,7 @@ public class VerificationService {
     }
 
     public String addUserToVerificationDB(String email) throws Exception {
-        String statement = "INSERT INTO verification_codes (email,code,created_at) VALUES (?,?,?)";
+        String statement = "INSERT INTO verification_codes (email,code) VALUES (?,?)";
         String generatedCode = getRandomVerificationCode();
         String hashedRandomCode = BCrypt.hashpw(generatedCode, BCrypt.gensalt());
 
@@ -39,7 +39,6 @@ public class VerificationService {
 
             stmt.setString(1, email);
             stmt.setString(2, hashedRandomCode);
-            stmt.setString(3, getCurrentTime());
             stmt.executeUpdate();
         }
 
