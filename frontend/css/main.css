@@ -21,8 +21,8 @@ body {
 
 .login-button {
     position: absolute;
-    right: 33px;       /* 10px from right edge */
-    top: 20px;         /* same vertical position as the container padding */
+    right: 22px;       /* 10px from right edge */
+    top: 7px;         /* same vertical position as the container padding */
     padding: 0;
     background: transparent;
     color: white;
