@@ -28,6 +28,7 @@ public class SessionController {
             session.setAttribute("email",email);
             return ApiResponse.success();
         } catch (Exception e) {
+            e.printStackTrace();
             return ApiResponse.error("Failed to set a session email");
         }
     }
@@ -38,6 +39,7 @@ public class SessionController {
             String email = (String) session.getAttribute("email");
             return ApiResponse.success(email);
         } catch (Exception e) {
+            e.printStackTrace();
             return ApiResponse.error("Failed to get the session email");
         }
     }
@@ -48,6 +50,7 @@ public class SessionController {
             session.removeAttribute("email");
             return ApiResponse.success();
         } catch (Exception e) {
+            e.printStackTrace();
             return ApiResponse.error("Failed to delete the session email");
         }
     }
@@ -61,6 +64,7 @@ public class SessionController {
             session.setAttribute("password",hashedPassword);
             return ApiResponse.success();
         } catch (Exception e) {
+            e.printStackTrace();
             return ApiResponse.error("Failed to set a session hashed password");
         }
     }
@@ -71,6 +75,7 @@ public class SessionController {
             session.removeAttribute("password");
             return ApiResponse.success();
         } catch (Exception e) {
+            e.printStackTrace();
             return ApiResponse.error("Failed to delete the session password");
         }
     }
@@ -83,6 +88,7 @@ public class SessionController {
             session.setAttribute("user-id",userId);
             return ApiResponse.success();
         } catch (Exception e) {
+            e.printStackTrace();
             return ApiResponse.error("Failed to set session user id");
         }
     }
@@ -93,6 +99,7 @@ public class SessionController {
             Integer userId = (Integer) session.getAttribute("user-id");
             return ApiResponse.success(userId);
         } catch (Exception e) {
+            e.printStackTrace();
             return ApiResponse.error("Failed to get session user id");
         }
     }
@@ -103,6 +110,7 @@ public class SessionController {
             session.removeAttribute("user-id");
             return ApiResponse.success();
         } catch (Exception e) {
+            e.printStackTrace();
             return ApiResponse.error("No session user id found");
         }
     }

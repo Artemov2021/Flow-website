@@ -40,11 +40,13 @@ public class AuthController {
                 try {
                     emailService.sendUserVerificationCodeEmail(email,generatedCode);
                 } catch (Exception e) {
+                    e.printStackTrace();
                     throw new RuntimeException(e);
                 }
             });
             return ApiResponse.success();
         } catch (Exception e) {
+            e.printStackTrace();
             return ApiResponse.error("Failed to send signup code");
         }
     }
@@ -55,6 +57,7 @@ public class AuthController {
             String email = (String) session.getAttribute("email");
             return ApiResponse.success(verificationService.isUserInVerificationDB(email));
         } catch (Exception e) {
+            e.printStackTrace();
             return ApiResponse.error("Failed to get verification status");
         }
     }
@@ -67,6 +70,7 @@ public class AuthController {
             boolean isCorrect = BCrypt.checkpw(plainTypedCode,hashedCode);
             return ApiResponse.success(isCorrect);
         } catch (Exception e) {
+            e.printStackTrace();
             return ApiResponse.error("Failed to verify code");
         }
     }
@@ -79,6 +83,7 @@ public class AuthController {
             authService.signUpUser(email,password);
             return ApiResponse.success();
         } catch (Exception e) {
+            e.printStackTrace();
             return ApiResponse.error("Failed to sign up the user");
         }
     }
@@ -90,6 +95,7 @@ public class AuthController {
             verificationService.deleteUserFromVerificationDB(email);
             return ApiResponse.success();
         } catch (Exception e) {
+            e.printStackTrace();
             return ApiResponse.error("Failed to remove the user from verification");
         }
     }
@@ -103,6 +109,7 @@ public class AuthController {
             boolean isPasswordCorrect = authService.isPlainPasswordCorrect(email,plainPassword);
             return ApiResponse.success(isPasswordCorrect);
         } catch (Exception e) {
+            e.printStackTrace();
             return ApiResponse.error("Failed to check whether the password is correct");
         }
     }
@@ -118,12 +125,14 @@ public class AuthController {
                     try {
                         emailService.sendUserVerificationCodeEmail(email,generatedCode);
                     } catch (Exception e) {
+                        e.printStackTrace();
                         throw new RuntimeException(e);
                     }
                 });
             }
             return ApiResponse.success();
         } catch (Exception e) {
+            e.printStackTrace();
             return ApiResponse.error("Failed to send login code");
         }
     }

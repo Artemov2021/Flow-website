@@ -50,6 +50,7 @@ public class UserController {
             boolean hasUserAvatar = Files.exists(avatarPath);
             return ApiResponse.success(hasUserAvatar);
         } catch (Exception e) {
+            e.printStackTrace();
             return ApiResponse.error("Failed to check whether user has an avatar");
         }
     }
@@ -87,6 +88,7 @@ public class UserController {
             return ApiResponse.success();
 
         } catch (Exception e) {
+            e.printStackTrace();
             return ApiResponse.error("Failed to set user's avatar: " + e.getMessage());
         }
     }
@@ -108,6 +110,7 @@ public class UserController {
                 return ApiResponse.error("Failed to delete users avatar");
             }
         } catch (Exception e) {
+            e.printStackTrace();
             return ApiResponse.error("Failed to delete users avatar");
         }
     }
@@ -119,6 +122,7 @@ public class UserController {
             String email = userService.getEmail(userId);
             return ApiResponse.success(email);
         } catch (Exception e) {
+            e.printStackTrace();
             return ApiResponse.error("Failed to get user email");
         }
     }
@@ -131,6 +135,7 @@ public class UserController {
             String createdAtDate = getConvertedCreatedAtDate(date);
             return ApiResponse.success(createdAtDate);
         } catch (Exception e) {
+            e.printStackTrace();
             return ApiResponse.error("Failed to get user email");
         }
     }
@@ -142,6 +147,7 @@ public class UserController {
             userService.deleteAccount(userId);
             return ApiResponse.success();
         } catch (Exception e) {
+            e.printStackTrace();
             return ApiResponse.error("Failed to delete users account");
         }
     }
@@ -153,6 +159,7 @@ public class UserController {
             userService.deleteSessions(userId);
             return ApiResponse.success();
         } catch (Exception e) {
+            e.printStackTrace();
             return ApiResponse.error("Failed to delete users sessions");
         }
     }

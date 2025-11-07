@@ -29,6 +29,7 @@ public class StatsController {
             statsService.saveResultsToDB(userId,totalWords,correctWords);
             return ApiResponse.success();
         } catch (Exception e) {
+            e.printStackTrace();
             return ApiResponse.error("Failed to save results");
         }
     }
@@ -41,6 +42,7 @@ public class StatsController {
             int record = statsService.getCorrectWordsRecordFromDB(userId);
             return ApiResponse.success(record);
         } catch (Exception e) {
+            e.printStackTrace();
             return ApiResponse.error("Failed to get correct words record");
         }
     }
@@ -52,6 +54,7 @@ public class StatsController {
             ArrayList<Integer> sessions = statsService.getAllUserSessions(userId);
             return ApiResponse.success(sessions);
         } catch (Exception e) {
+            e.printStackTrace();
             return ApiResponse.error("Failed to get all users sessions");
         }
     }
@@ -64,6 +67,7 @@ public class StatsController {
             int result = countConsecutiveDaysUpToToday(dates);
             return ApiResponse.success(result);
         } catch (Exception e) {
+            e.printStackTrace();
             return ApiResponse.error("Failed to get users current streak ");
         }
     }
