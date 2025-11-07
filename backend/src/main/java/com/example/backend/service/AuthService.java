@@ -38,9 +38,13 @@ public class AuthService {
 
             stmt.setString(1, email);
             ResultSet rs = stmt.executeQuery();
-            String hashedPasswordFromDB = rs.getString("password");
 
-            return BCrypt.checkpw(plainPassword, hashedPasswordFromDB);
+            if (rs.next()) {
+                String hashedPasswordFromDB = rs.getString("password");
+                return BCrypt.checkpw(plainPassword, hashedPasswordFromDB);
+            } else {
+                return false;
+            }
         }
     }
 }
