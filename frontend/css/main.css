@@ -21,8 +21,8 @@ body {
 
 .login-button {
     position: absolute;
-    right: 22px;       /* 10px from right edge */
-    top: 7px;         /* same vertical position as the container padding */
+    right: 22px;
+    top: 7px;
     padding: 0;
     background: transparent;
     color: white;
@@ -41,8 +41,8 @@ body {
 
 .user-section {
     position: absolute;
-    right: 33px; /* <-- puts it 33px from right edge */
-    top: 20px;   /* aligns vertically with timer row */
+    right: 22px;
+    top: 7px;
 
     cursor: pointer;
 }

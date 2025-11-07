@@ -62,7 +62,10 @@ async function checkAndLogin() {
     setEmailDefaultStyle();
     setPasswordDefaultStyle();
 
-    if (await isEnteredEmailInUsersDB() && await isPasswordCorrect()) {
+    const emailExists = await isEnteredEmailInUsersDB();
+    const isPasswordCorrect = emailExists &&  await validatePassword();
+
+    if (emailExists && isPasswordCorrect) {
         await setSessionEmail();
         await setUserSessionId();
         await deleteSessionEmail();
@@ -71,11 +74,11 @@ async function checkAndLogin() {
         return;
     }
 
-    if (!await isEnteredEmailInUsersDB()) {
+    if (!emailExists) {
         setEmailErrorStyle("Email is incorrect");
     }
 
-    if (!await isPasswordCorrect()) {
+    if (!isPasswordCorrect) {
         setPasswordErrorStyle("Password is incorrect");
     }
 }
@@ -127,7 +130,7 @@ async function isEnteredEmailInUsersDB() {
 
     return data.result;
 }
-async function isPasswordCorrect() {
+async function validatePassword() {
     const email = loginEmailInput.value.trim();
     const password = loginPasswordInput.value.trim();
 
