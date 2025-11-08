@@ -36,7 +36,7 @@ public class EmailService {
                             <h1 style="color:#2563eb;">Flow</h1>
                             <p style="font-size:18px; color:#444;">Your verification code is:</p>
                             <p style="font-size:36px; font-weight:bold; color:#111;">%s</p>
-                            <p style="font-size:14px; color:#777;">This code expires in 10 minutes.</p>
+                            <p style="font-size:14px; color:#777;">This code expires in 5 minutes.</p>
                           </td></tr>
                         </table>
                       </body>

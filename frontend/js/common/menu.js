@@ -137,5 +137,5 @@ async function deleteSessionUserId() {
     }
 }
 function reloadMainPage() {
-    window.location.href = './../pages/index.html';
+    window.location.href = '../../index.html';
 }
