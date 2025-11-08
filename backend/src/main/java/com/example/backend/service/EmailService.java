@@ -1,56 +1,52 @@
 package com.example.backend.service;
 
-import jakarta.mail.*;
-import jakarta.mail.internet.InternetAddress;
-import jakarta.mail.internet.MimeMessage;
+import com.resend.Resend;
+import com.resend.core.exception.ResendException;
+import com.resend.services.emails.model.SendEmailRequest;
+import com.resend.services.emails.model.SendEmailResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import java.util.Properties;
 
 @Service
 public class EmailService {
 
-    @Value("${EMAIL_USERNAME}")
-    private String FROM;
+    @Value("${RESEND_API_KEY}")
+    private String apiKey;
 
-    @Value("${EMAIL_PASSWORD}")
-    private String PASSWORD;
+    @Value("${EMAIL_FROM}")
+    private String fromEmail;
 
-    public void sendUserVerificationCodeEmail(String email, String code) throws MessagingException {
-        Properties props = new Properties();
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.host", "smtp.gmail.com");
+    @Value("${EMAIL_FROM_NAME}")
+    private String fromName;
 
-        // Try implicit SSL on 465 (bypasses blocked 587)
-        props.put("mail.smtp.port", "465");
-        props.put("mail.smtp.ssl.enable", "true");
-        props.put("mail.smtp.starttls.enable", "false");
-        props.put("mail.smtp.starttls.required", "false");
+    public void sendUserVerificationCodeEmail(String toEmail, String code) throws ResendException {
+        // Create Resend client
+        Resend resend = new Resend(apiKey);
 
-        // Timeouts (ms)
-        props.put("mail.smtp.connectiontimeout", "10000");
-        props.put("mail.smtp.timeout", "10000");
-        props.put("mail.smtp.writetimeout", "10000");
+        // Build the email
+        SendEmailRequest sendEmailRequest = SendEmailRequest.builder()
+                .from(String.format("%s <%s>", fromName, fromEmail))
+                .to(toEmail)
+                .subject("Your Verification Code")
+                .html(String.format("""
+                    <html>
+                      <body style="font-family: Arial, sans-serif; background-color:#f7f7f7; padding:20px;">
+                        <table width="100%%" style="max-width:480px; margin:auto; background:white; border-radius:10px; padding:20px;">
+                          <tr><td style="text-align:center;">
+                            <h1 style="color:#2563eb;">Flow</h1>
+                            <p style="font-size:18px; color:#444;">Your verification code is:</p>
+                            <p style="font-size:36px; font-weight:bold; color:#111;">%s</p>
+                            <p style="font-size:14px; color:#777;">This code expires in 10 minutes.</p>
+                          </td></tr>
+                        </table>
+                      </body>
+                    </html>
+                """, code))
+                .build();
 
-        Session session = Session.getInstance(props, new Authenticator() {
-            @Override
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(FROM, PASSWORD); // use Gmail App Password here
-            }
-        });
-        session.setDebug(true);
+        // Send it
+        SendEmailResponse response = resend.emails().send(sendEmailRequest);
 
-        Message message = new MimeMessage(session);
-        message.setFrom(new InternetAddress(FROM));
-        message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(email));
-        message.setSubject("Your Verification Code");
-        message.setContent("""
-        <html><body>
-            <p style="font-size:42px;">Your verification code is: <b>%s</b></p>
-        </body></html>
-    """.formatted(code), "text/html; charset=utf-8");
-
-        Transport.send(message);
+        System.out.println("✅ Email sent with ID: " + response.getId());
     }
 }
