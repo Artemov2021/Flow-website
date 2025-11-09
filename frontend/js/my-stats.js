@@ -26,6 +26,7 @@ async function initMyStats() {
         setupMyStatsListeners();
         showAppearingAnimations();
         await setData();
+        console.log("user data: "+userData);
         if (userData) {
             await Promise.all([
                 showGraphLine(),
@@ -51,7 +52,6 @@ async function setUserId() {
     }
 
     userId = data.result;
-    console.log("User session ID: ", data.result);
 }
 async function validateUserAvatar() {
     const response = await fetch(`${API_BASE_URL}/user/has-avatar`, {
@@ -213,8 +213,6 @@ async function showBestWPM() {
 }
 async function showCurrentStreak() {
     const currentStreakInDays = await getCurrentStreak();
-
-    console.log("current streak: "+currentStreakInDays);
 
     startCountingAnimation(currentStreak,currentStreakInDays," days");
 }
