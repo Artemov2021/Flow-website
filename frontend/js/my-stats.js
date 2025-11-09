@@ -26,9 +26,7 @@ async function initMyStats() {
         setupMyStatsListeners();
         showAppearingAnimations();
         await setData();
-        console.log("user data: "+userData);
         if (userData.length >= 1) {
-            console.log("if condition is true!");
             await Promise.all([
                 showGraphLine(),
                 showAverageAccuracy(),
