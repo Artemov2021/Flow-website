@@ -26,12 +26,14 @@ async function initMyStats() {
         setupMyStatsListeners();
         showAppearingAnimations();
         await setData();
-        await Promise.all([
-            showGraphLine(),
-            showAverageAccuracy(),
-            showBestWPM(),
-            showCurrentStreak()
-        ]);
+        if (userData) {
+            await Promise.all([
+                showGraphLine(),
+                showAverageAccuracy(),
+                showBestWPM(),
+                showCurrentStreak()
+            ]);
+        }
     } catch (error) {
         console.log(error.message);
     }
@@ -201,9 +203,6 @@ async function showAverageAccuracy() {
     const totalWords = await getTotalWords(); // one number
     const correctWords = userData.reduce((a, b) => a + b, 0);
     const average = totalWords ? (correctWords / totalWords) * 100 : 0;
-    console.log("correct words: "+correctWords);
-    console.log("total words: "+totalWords);
-    console.log("average accuracy: "+average);
 
     startCountingAnimation(averageAccuracy,average,"%");
 }

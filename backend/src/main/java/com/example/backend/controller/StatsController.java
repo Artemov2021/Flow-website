@@ -75,7 +75,6 @@ public class StatsController {
     @GetMapping("/total-words")
     public ApiResponse<Integer> getTotalWords(HttpSession session) {
         try {
-            System.out.println("User id: "+session.getAttribute("user-id"));
             int userId = (int) session.getAttribute("user-id");
             int totalWords = statsService.getTotalWords(userId);
             return ApiResponse.success(totalWords);
