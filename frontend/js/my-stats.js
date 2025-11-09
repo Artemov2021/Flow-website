@@ -28,6 +28,7 @@ async function initMyStats() {
         await setData();
         console.log("user data: "+userData);
         if (userData) {
+            console.log("if condition is true!");
             await Promise.all([
                 showGraphLine(),
                 showAverageAccuracy(),
