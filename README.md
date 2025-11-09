@@ -1,7 +1,6 @@
 # About project
 
-Flow — a minimalist WPM testing platform built for focus and precision.
-Designed with clarity, speed, and a pleasant user experience in mind — Flow helps you practice typing with elegance, not clutter.
+Flow — a minimalist WPM testing platform built for focus and precision. Designed with clarity, speed, and a pleasant user experience in mind.
 
 <br>
 <br>
