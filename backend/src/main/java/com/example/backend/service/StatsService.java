@@ -83,4 +83,21 @@ public class StatsService {
 
         return dates;
     }
+
+    public int getTotalWords(int userId) throws SQLException {
+        int totalWords = 0;
+        String sql = "SELECT total_words FROM sessions WHERE user_id = ?";
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                totalWords += rs.getInt("total_words");
+            }
+        }
+
+        return totalWords;
+    }
 }

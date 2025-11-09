@@ -198,7 +198,9 @@ async function showGraphLine() {
 
 }
 async function showAverageAccuracy() {
-    const average = userData.reduce((a, b) => a + b, 0) / userData.length;
+    const totalWords = await getTotalWords(); // one number
+    const correctWords = userData.reduce((a, b) => a + b, 0);
+    const average = totalWords ? (correctWords / totalWords) * 100 : 0;
 
     startCountingAnimation(averageAccuracy,average,"%");
 }
@@ -216,6 +218,23 @@ async function showCurrentStreak() {
 }
 async function getCurrentStreak() {
     const response = await fetch(`${API_BASE_URL}/stats/current-streak`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+        throw new Error(data.error);
+    }
+
+    return data.result;
+}
+async function getTotalWords() {
+    const response = await fetch(`${API_BASE_URL}/stats/total-words`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",

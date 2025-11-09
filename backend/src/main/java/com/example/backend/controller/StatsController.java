@@ -72,4 +72,16 @@ public class StatsController {
         }
     }
 
+    @GetMapping("/total-words")
+    public ApiResponse<Integer> getTotalWords(HttpSession session) {
+        try {
+            int userId = (int) session.getAttribute("user-id");
+            int totalWords = statsService.getTotalWords(userId);
+            return ApiResponse.success(totalWords);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ApiResponse.error("Failed to get users total typed words ");
+        }
+    }
+
 }
